@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Müşteriler</h1>
+<div class="card">
+  <table class="tbl">
+    <tr><th>Ad</th><th>Telefon</th><th>E-posta</th><th>Bildirim izni</th><th></th></tr>
+    {% for c in customers %}
+    <tr>
+      <td>{{ c.full_name }}</td><td>{{ c.phone or '—' }}</td><td>{{ c.email or '—' }}</td>
+      <td>{{ '✓' if c.contact_consent_at else '—' }}</td>
+      <td class="r">
+        {% if user.role == "OWNER" and (c.phone or c.email) %}
+        <form method="post" action="/musteriler/{{ c.id }}/anonimlestir" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="link small" title="KVKK silme talebi">Kişisel veriyi sil</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="5" class="muted">Henüz müşteri yok.</td></tr>{% endfor %}
+  </table>
+</div>
+<form method="post" action="/musteriler" class="card stack">
+  <h2>Müşteri ekle</h2>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="grid3">
+    <label>Ad soyad <input name="full_name" required maxlength="120"></label>
+    <label>Telefon <input name="phone" inputmode="tel" placeholder="05xx xxx xx xx"></label>
+    <label>E-posta <input type="email" name="email"></label>
+  </div>
+  <label>Not <input name="notes" maxlength="2000"></label>
+  <label class="check"><input type="checkbox" name="consent" value="true"> Müşteri, sipariş durumu bildirimleri için açık rıza verdi (KVKK)</label>
+  <button class="primary">Ekle</button>
+</form>
+{% endblock %}

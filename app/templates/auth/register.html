@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Kayıt · Atölye Paneli{% endblock %}
+{% block main_class %}auth{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Atölyenizi kaydedin</h1>
+  <form method="post" action="/kayit" class="stack">
+    <label>Atölye adı <input name="workshop_name" value="{{ form.workshop_name if form else '' }}" required maxlength="120"></label>
+    <label>Vitrin adresi <span class="muted small">/v/<b>adres</b></span>
+      <input name="slug" value="{{ form.slug if form else '' }}" required pattern="[a-z0-9-]{3,60}" placeholder="ornek-kuyumcu"></label>
+    <label>Adınız soyadınız <input name="full_name" value="{{ form.full_name if form else '' }}" required maxlength="120"></label>
+    <label>E-posta <input type="email" name="email" value="{{ form.email if form else '' }}" required autocomplete="username"></label>
+    <label>Şifre <span class="muted small">(en az 10 karakter)</span>
+      <input type="password" name="password" required minlength="10" autocomplete="new-password"></label>
+    <button class="primary">Kaydı tamamla</button>
+  </form>
+  <p class="muted small">Zaten hesabınız var mı? <a href="/giris">Giriş yapın</a></p>
+</div>
+{% endblock %}

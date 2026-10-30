@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Ürünler</h1>
+
+{% if user.role == "OWNER" %}
+<div class="card">
+  <h2>Günlük has altın fiyatı</h2>
+  <form method="post" action="/atolye/altin-fiyati" class="row">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input name="price" inputmode="decimal" placeholder="Gram fiyatı (TL)" value="{{ workshop.gold_price_per_gram or '' }}">
+    <button>Güncelle</button>
+    {% if workshop.gold_price_updated_at %}<span class="muted small">son: {{ workshop.gold_price_updated_at|yerel }}</span>{% endif %}
+  </form>
+</div>
+{% endif %}
+
+<div class="card">
+  <table class="tbl">
+    <tr><th>Ürün</th><th>Tip</th><th>Detay</th><th>Vitrin</th></tr>
+    {% for p in products %}
+    <tr>
+      <td><b>{{ p.name }}</b>{% if p.description %}<br><span class="muted small">{{ p.description }}</span>{% endif %}</td>
+      <td>{{ 'Altın' if p.pricing_type == 'GOLD' else 'Sabit' }}</td>
+      <td class="small">
+        {% if p.pricing_type == 'GOLD' %}{{ p.weight_g }} gr · {{ p.purity_milyem }} milyem · işçilik {{ p.labor_milyem or 0 }}
+        {% else %}{{ p.base_price|tl }} + KDV{% endif %}
+      </td>
+      <td>{{ '✓' if p.show_in_showcase else '—' }}</td>
+    </tr>
+    {% else %}<tr><td colspan="4" class="muted">Henüz ürün yok.</td></tr>{% endfor %}
+  </table>
+</div>
+
+{% if user.role == "OWNER" %}
+<form method="post" action="/urunler" class="card stack">
+  <h2>Ürün ekle</h2>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="grid2">
+    <label>Ad <input name="name" required maxlength="120"></label>
+    <label>Fiyat tipi
+      <select name="pricing_type">
+        <option value="FIXED">Sabit fiyat</option>
+        <option value="GOLD">Altın (gram × milyem)</option>
+      </select>
+    </label>
+  </div>
+  <label>Açıklama <textarea name="description" rows="2" maxlength="2000"></textarea></label>
+  <fieldset>
+    <legend>Sabit fiyat</legend>
+    <label>Fiyat (KDV hariç, TL) <input name="base_price" inputmode="decimal"></label>
+  </fieldset>
+  <fieldset>
+    <legend>Altın</legend>
+    <div class="grid3">
+      <label>Gram <input name="weight_g" inputmode="decimal"></label>
+      <label>Ayar (milyem)
+        <select name="purity_milyem">
+          <option value="">—</option>
+          {% for k, v in purities.items() %}<option value="{{ v }}">{{ k }} ({{ v }})</option>{% endfor %}
+        </select>
+      </label>
+      <label>İşçilik (milyem) <input name="labor_milyem" type="number" min="0" max="500"></label>
+    </div>
+  </fieldset>
+  <div class="grid2">
+    <label>Ek maliyet (taş, kutu…) <input name="extra_cost" inputmode="decimal" value="0"></label>
+    <label class="check"><input type="checkbox" name="show_in_showcase" value="true" checked> Vitrinde göster</label>
+  </div>
+  <button class="primary">Kaydet</button>
+</form>
+{% endif %}
+{% endblock %}

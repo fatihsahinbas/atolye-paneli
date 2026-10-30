@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="head">
+  <h1>Sipariş #{{ order.id }}</h1>
+  <span class="badge s-{{ order.status|lower }}">{{ STATUS_LABELS[order.status] }}</span>
+</div>
+
+<div class="grid2">
+  <div class="card">
+    <h2>Bilgiler</h2>
+    <p><b>{{ order.customer.full_name }}</b>{% if order.customer.phone %} · {{ order.customer.phone }}{% endif %}</p>
+    {% if order.due_date %}<p>Termin: {{ order.due_date.strftime('%d.%m.%Y') }}</p>{% endif %}
+    {% if order.note %}<p class="muted">{{ order.note }}</p>{% endif %}
+    <table class="tbl">
+      <tr><th>Kalem</th><th>Adet</th><th class="r">Tutar (KDV dahil)</th></tr>
+      {% for it in order.items %}
+      <tr><td>{{ it.description }}</td><td>{{ it.quantity }}</td><td class="r">{{ it.line_gross|tl }}</td></tr>
+      {% endfor %}
+      <tr class="total"><td colspan="2">Toplam</td><td class="r">{{ order.total_gross|tl }}</td></tr>
+    </table>
+    <p class="small">Müşteri takip linki:<br><code>{{ tracking_url }}</code></p>
+  </div>
+
+  <div class="card">
+    <h2>Durum değiştir</h2>
+    {% if next_statuses %}
+    <form method="post" action="/siparisler/{{ order.id }}/durum" class="stack">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input name="note" maxlength="300" placeholder="Not (isteğe bağlı)">
+      <div class="row wrap">
+        {% for s in next_statuses %}
+        <button name="to_status" value="{{ s }}" class="{{ 'danger' if s == 'CANCELLED' else 'primary' }}">{{ STATUS_LABELS[s] }} →</button>
+        {% endfor %}
+      </div>
+    </form>
+    {% else %}<p class="muted">Sipariş kapandı.</p>{% endif %}
+
+    <h2 class="mt">Geçmiş</h2>
+    <ol class="timeline">
+      {% for e in order.events %}
+      <li><b>{{ STATUS_LABELS[e.to_status] }}</b> <span class="muted small">{{ e.created_at|yerel }}</span>
+        {% if e.note %}<br><span class="small">{{ e.note }}</span>{% endif %}</li>
+      {% endfor %}
+    </ol>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Üretim fotoğrafları</h2>
+  <div class="gallery">
+    {% for m in media %}
+    <figure><img src="/medya/{{ m.id }}" alt="{{ m.caption or 'Üretim fotoğrafı' }}"><figcaption>{{ m.caption or '' }}{% if not m.is_public %} · <i>gizli</i>{% endif %}</figcaption></figure>
+    {% else %}<p class="muted">Henüz fotoğraf yok.</p>{% endfor %}
+  </div>
+  <form method="post" action="/siparisler/{{ order.id }}/medya" enctype="multipart/form-data" class="row wrap">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="file" name="file" accept="image/jpeg,image/png,image/webp" required>
+    <input name="caption" maxlength="200" placeholder="Açıklama">
+    <label class="check"><input type="checkbox" name="is_public" value="true" checked> Müşteri görsün</label>
+    <button>Yükle</button>
+  </form>
+</div>
+{% endblock %}

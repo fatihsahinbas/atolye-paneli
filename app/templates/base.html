@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Atölye Paneli{% endblock %}</title>
+  <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/js/htmx.min.js" defer></script>
+</head>
+<body {% if csrf_token %}hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'{% endif %}>
+  {% if user %}
+  <header class="topbar">
+    <a class="brand" href="/">◆ Atölye Paneli</a>
+    <nav>
+      <a href="/">Pano</a>
+      <a href="/siparisler/yeni">Yeni sipariş</a>
+      <a href="/musteriler">Müşteriler</a>
+      <a href="/urunler">Ürünler</a>
+      <a href="/v/{{ user.workshop.slug }}" target="_blank" rel="noopener">Vitrin ↗</a>
+    </nav>
+    <div class="who">
+      <a href="/hesap">{{ user.full_name }}</a>
+      <form method="post" action="/cikis" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="link">Çıkış</button>
+      </form>
+    </div>
+  </header>
+  {% endif %}
+  <main class="{% block main_class %}container{% endblock %}">
+    {% if error %}<div class="alert">{{ error }}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

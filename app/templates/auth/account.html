@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Hesabım</h1>
+<div class="card">
+  <p><b>{{ user.full_name }}</b> · {{ user.email }} · rol: {{ user.role }}</p>
+  <p class="muted">Atölye: {{ user.workshop.name }}</p>
+</div>
+<div class="card danger">
+  <h2>Hesabı sil</h2>
+  {% if user.role == "OWNER" %}
+  <p>Atölye sahibi olarak hesabınızı silerseniz <b>atölyenin tüm verisi</b> (müşteriler, siparişler, fotoğraflar) kalıcı olarak silinir.</p>
+  {% else %}
+  <p>Yalnızca kendi kullanıcı hesabınız silinir.</p>
+  {% endif %}
+  <form method="post" action="/hesap/sil" class="row">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="password" name="password" placeholder="Şifrenizle onaylayın" required>
+    <button class="danger">Kalıcı olarak sil</button>
+  </form>
+</div>
+{% endblock %}

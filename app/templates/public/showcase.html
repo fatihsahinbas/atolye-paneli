@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ workshop.name }}{% endblock %}
+{% block main_class %}public wide{% endblock %}
+{% block content %}
+<header class="hero">
+  <h1>{{ workshop.name }}</h1>
+  <p class="muted">Kişiye özel üretim</p>
+</header>
+<div class="cards">
+  {% for c in cards %}
+  <article class="card product">
+    <h3>{{ c.product.name }}</h3>
+    {% if c.product.description %}<p class="muted">{{ c.product.description }}</p>{% endif %}
+    <p class="price">{% if c.price %}{{ c.price|tl }}{% else %}Fiyat için sorunuz{% endif %}</p>
+  </article>
+  {% else %}<p class="muted">Vitrin hazırlanıyor.</p>{% endfor %}
+</div>
+{% endblock %}
