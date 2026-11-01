@@ -1,11 +1,11 @@
 /* Atölye Paneli — temel stil. Sahip: Seher (marka/renkler burada değişir) */
 :root {
-  --ink: #2b2420; --muted: #7a6e66; --line: #e7dfd6; --bg: #faf7f3; --card: #fff;
-  --brand: #8a5a2b; --brand-2: #c08a4a; --ok: #3f7d4e; --warn: #b5651d; --bad: #a33a2c;
-  --radius: 10px; font-size: 15px;
+  --ink: #1c2221; --muted: #6b7271; --line: #e2dfd5; --bg: #fcfbf7; --card: #ffffff;
+  --brand: #14523d; --brand-2: #c5a059; --ok: #2e7d32; --warn: #d97706; --bad: #b91c1c;
+  --radius: 12px; font-size: 15px;
 }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+body { margin: 0; font-family: "Inter", "Segoe UI", "Helvetica Neue", sans-serif; color: var(--ink); background: var(--bg); }
 a { color: var(--brand); }
 h1 { font-size: 1.6rem; margin: .2rem 0 1rem; } h2 { font-size: 1.1rem; margin: 0 0 .8rem; }
 .muted { color: var(--muted); } .small { font-size: .85rem; } .r { text-align: right; }
@@ -13,7 +13,16 @@ code { background: #f3ede6; padding: 2px 6px; border-radius: 4px; word-break: br
 
 .topbar { display: flex; gap: 1.5rem; align-items: center; padding: .7rem 1.5rem; background: var(--ink); color: #fff; }
 .topbar a { color: #f0e6da; text-decoration: none; } .topbar nav { display: flex; gap: 1rem; flex: 1; }
-.brand { font-weight: 700; color: var(--brand-2) !important; }
+.brand { 
+  font-weight: 800; 
+  font-size: 1.1rem;
+  color: var(--brand-2) !important; 
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+}
+.brand svg { margin-right: 8px; }
 .who { display: flex; gap: .8rem; align-items: center; } .who .link { color: #f0e6da; }
 
 .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }

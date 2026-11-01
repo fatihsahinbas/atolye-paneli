@@ -11,7 +11,14 @@
 <body {% if csrf_token %}hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'{% endif %}>
   {% if user %}
   <header class="topbar">
-    <a class="brand" href="/">◆ Atölye Paneli</a>
+  <a href="/" class="brand" aria-label="Atölye Paneli Ana Sayfa">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Pırlanta / Elmas Kesimi -->
+    <path d="M6 3h12l4 6-10 12L2 9l4-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M2 9h20M8 9l4 12M16 9l-4 12M6 3l2 6M18 3l-2 6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  </svg>
+  Atölye Paneli
+</a>
     <nav>
       <a href="/">Pano</a>
       <a href="/siparisler/yeni">Yeni sipariş</a>
