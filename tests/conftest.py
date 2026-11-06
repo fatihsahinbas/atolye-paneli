@@ -1,7 +1,9 @@
 import re
+from io import BytesIO
 
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image
 
 from app.core.config import Settings
 from app.main import create_app
@@ -50,6 +52,13 @@ def csrf(client: TestClient, path: str = "/musteriler") -> str:
     m = CSRF_RE.search(client.get(path).text)
     assert m, "csrf token bulunamadı"
     return m.group(1)
+
+
+def make_image(size: tuple[int, int], fmt: str, **save_opts) -> bytes:
+    """Pillow ile gerçek (geçerli) bir görsel üretir."""
+    buf = BytesIO()
+    Image.new("RGB", size, "red").save(buf, fmt, **save_opts)
+    return buf.getvalue()
 
 
 def seed_order(client: TestClient, consent: bool = True) -> int:
