@@ -19,3 +19,7 @@ Fatih: mimari, code review, deploy.
 
 ## Ödev formatı (PROJE N)
 Her haftanın ödevleri "PROJE N" formatında yazılır: **Kazanım** + **Adım Adım Çözüm Algoritması**.
+
+| Hafta | Ödev dosyası |
+|---|---|
+| H2 (9–13 Kasım) | [docs/odevler/hafta-2.md](odevler/hafta-2.md) |
