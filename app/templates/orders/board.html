@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+<div class="head">
+  <h1>Üretim panosu</h1>
+  <a class="btn primary" href="/siparisler/yeni">+ Yeni sipariş</a>
+</div>
+<div class="board">
+  {% for status, orders in columns.items() %}
+  <section class="col">
+    <h3>{{ STATUS_LABELS[status] }} <span class="count">{{ orders|length }}</span></h3>
+    {% for o in orders %}
+    <a class="ticket {% if o.due_date and o.due_date < today and status != 'DELIVERED' %}late{% endif %}" href="/siparisler/{{ o.id }}">
+      <b>#{{ o.id }} · {{ o.customer.full_name }}</b>
+      <span>{{ o.items[0].description if o.items else '' }}</span>
+      <span class="meta">{{ o.total_gross|tl }}{% if o.due_date %} · termin {{ o.due_date.strftime('%d.%m') }}{% endif %}</span>
+    </a>
+    {% else %}
+    <p class="empty">—</p>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

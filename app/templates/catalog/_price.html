@@ -1,0 +1,10 @@
+{% if error %}<span class="warn">{{ error }}</span>
+{% else %}
+<div class="price-lines">
+  <span>Malzeme <b>{{ bd.material|tl }}</b></span>
+  {% if bd.labor %}<span>İşçilik <b>{{ bd.labor|tl }}</b></span>{% endif %}
+  {% if bd.extra %}<span>Ek <b>{{ bd.extra|tl }}</b></span>{% endif %}
+  <span>KDV <b>{{ bd.vat|tl }}</b></span>
+  <span class="gross">Toplam <b>{{ bd.gross|tl }}</b></span>
+</div>
+{% endif %}

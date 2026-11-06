@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Sipariş takibi · {{ workshop.name }}{% endblock %}
+{% block main_class %}public{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <p class="muted small">{{ workshop.name }}</p>
+  <h1>Merhaba {{ first_name }},</h1>
+  {% if order.status == "CANCELLED" %}
+  <p>Bu sipariş iptal edildi.</p>
+  {% else %}
+  <p>Siparişinizin güncel durumu:</p>
+  {% set ns = namespace(reached=true) %}
+  <ol class="steps">
+    {% for s in steps %}
+    <li class="{{ 'done' if ns.reached else '' }} {{ 'current' if s == order.status else '' }}">{{ STATUS_LABELS[s] }}</li>
+    {% if s == order.status %}{% set ns.reached = false %}{% endif %}
+    {% endfor %}
+  </ol>
+  {% if order.due_date %}<p class="muted">Tahmini teslim: {{ order.due_date.strftime('%d.%m.%Y') }}</p>{% endif %}
+  {% endif %}
+  {% if media %}
+  <h2>Siparişinizden kareler</h2>
+  <div class="gallery">
+    {% for m in media %}<figure><img src="/t/{{ order.tracking_code }}/medya/{{ m.id }}" alt="{{ m.caption or 'Üretim fotoğrafı' }}"><figcaption>{{ m.caption or '' }}</figcaption></figure>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

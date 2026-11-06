@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Giriş · Atölye Paneli{% endblock %}
+{% block main_class %}auth{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>◆ Atölye Paneli</h1>
+  <p class="muted">Siparişten teslimata, atölyenizin tek ekranı.</p>
+  <form method="post" action="/giris" class="stack">
+    <label>E-posta <input type="email" name="email" value="{{ email or '' }}" required autocomplete="username"></label>
+    <label>Şifre <input type="password" name="password" required autocomplete="current-password"></label>
+    <button class="primary">Giriş yap</button>
+  </form>
+  <p class="muted small">Hesabınız yok mu? <a href="/kayit">Atölyenizi kaydedin</a></p>
+</div>
+{% endblock %}
