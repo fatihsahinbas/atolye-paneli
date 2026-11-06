@@ -1,11 +1,11 @@
 /* Atölye Paneli — temel stil. Sahip: Seher (marka/renkler burada değişir) */
 :root {
-  --ink: #2b2420; --muted: #7a6e66; --line: #e7dfd6; --bg: #faf7f3; --card: #fff;
-  --brand: #8a5a2b; --brand-2: #c08a4a; --ok: #3f7d4e; --warn: #b5651d; --bad: #a33a2c;
-  --radius: 10px; font-size: 15px;
+  --ink: #1c2221; --muted: #6b7271; --line: #e2dfd5; --bg: #fcfbf7; --card: #ffffff;
+  --brand: #14523d; --brand-2: #c5a059; --ok: #2e7d32; --warn: #b45309; --bad: #b91c1c;
+  --radius: 12px; font-size: 15px;
 }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; color: var(--ink); background: var(--bg); }
 a { color: var(--brand); }
 h1 { font-size: 1.6rem; margin: .2rem 0 1rem; } h2 { font-size: 1.1rem; margin: 0 0 .8rem; }
 .muted { color: var(--muted); } .small { font-size: .85rem; } .r { text-align: right; }
@@ -13,7 +13,8 @@ code { background: #f3ede6; padding: 2px 6px; border-radius: 4px; word-break: br
 
 .topbar { display: flex; gap: 1.5rem; align-items: center; padding: .7rem 1.5rem; background: var(--ink); color: #fff; }
 .topbar a { color: #f0e6da; text-decoration: none; } .topbar nav { display: flex; gap: 1rem; flex: 1; }
-.brand { font-weight: 700; color: var(--brand-2) !important; }
+.brand { font-weight: 800; font-size: 1.1rem; color: var(--brand-2) !important; display: flex; align-items: center; letter-spacing: 0.5px; text-decoration: none; }
+.brand svg { margin-right: 8px; }
 .who { display: flex; gap: .8rem; align-items: center; } .who .link { color: #f0e6da; }
 
 .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
@@ -72,3 +73,144 @@ button.link { background: none; border: none; padding: 0; color: var(--brand); t
 
 @media (max-width: 720px) { .grid2, .grid3 { grid-template-columns: 1fr; } .topbar { flex-wrap: wrap; } }
 .mt { margin-top: 1.4rem; }
+
+/* --- VİTRİN (SHOWCASE) TASARIMI --- */
+.showcase-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.product-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.product-image {
+  width: 100%;
+  height: 250px;
+  background: #eae5de; /* Resimlerin arkasındaki şık bej/gri arka plan */
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Resmin tamamını gösterir, kesmez */
+}
+.placeholder-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.product-info {
+  padding: 1rem;
+  text-align: center;
+  border-top: 1px solid var(--line);
+}
+.product-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+.product-info .price {
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+/* --- MODAL (DETAY PENCERESİ) --- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-content {
+  background-color: var(--card);
+  padding: 2rem;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  color: var(--muted);
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close:hover {
+  color: var(--bad);
+}
+.modal-body {
+  display: flex;
+  gap: 1.5rem;
+  flex-direction: column;
+}
+@media (min-width: 600px) {
+  .modal-body {
+    flex-direction: row;
+  }
+  .modal-image { flex: 1; }
+  .modal-text { flex: 1; }
+}
+.modal-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eae5de;
+  border-radius: 8px;
+}
+.modal-image img, .modal-image .placeholder-img {
+  width: 100%;
+  height: 300px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.modal-text .price.large {
+  font-size: 1.5rem;
+  color: var(--brand);
+  font-weight: 800;
+  margin: 1rem 0;
+}
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #25D366;
+  color: white !important;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 1rem;
+  transition: background 0.2s;
+}
+.btn-whatsapp:hover {
+  background-color: #1ebe57;
+}
