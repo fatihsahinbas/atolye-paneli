@@ -19,6 +19,9 @@ http://localhost:8000 → giriş · http://localhost:8000/v/demo-atolye → vitr
 
 Testler: `pytest -q` · Lint: `ruff check .` · Paket denetimi: `pip-audit -r requirements.txt`
 
+PR açmadan önce aynısını CI da çalıştırır (`.github/workflows/ci.yml`): ruff → pytest → `alembic check` → pip-audit.
+Modeli değiştirdiysen migration yazmayı unutma: `alembic revision --autogenerate -m "ne değişti"`.
+
 ## Mimari
 
 Modüler monolit. Her modül kendi `models.py / service.py / router.py` dosyalarına sahip.
@@ -60,8 +63,9 @@ tests/        30 test: domain, auth, IDOR, upload, webhook
            5 (giriş/kayıt rate limit), 6 (Pydantic), 7 (magic-byte, boyut, uuid ad), 8 (CORS yok = tek origin),
            9 (CSP, nosniff, DENY, Referrer), 10 (Caddy HTTPS + HSTS), 11 (Argon2id), 12 (HttpOnly/Secure/Lax),
            13 (genel hata sayfası, prod'da /docs kapalı), 14 (log maskeleme), 15 (ORM, parametreli),
-           16 (Jinja autoescape), 17 (HMAC + timestamp + idempotency), 18 (OWNER/STAFF), 21 (gerçek silme + anonimleştirme)
-⚠️ Eksik : 19 (pip-audit CI'a eklenecek), 20 (backup.sh hazır, cron + restore testi yapılacak),
+           16 (Jinja autoescape), 17 (HMAC + timestamp + idempotency), 18 (OWNER/STAFF), 21 (gerçek silme + anonimleştirme),
+           19 (pip-audit her PR'da CI'da)
+⚠️ Eksik : 20 (backup.sh hazır, cron + restore testi yapılacak),
            22 (VPS/SMS/WhatsApp harcama alarmı), 23 (yayın öncesi saldırgan testi — hafta 5),
            5 (rate limit tek süreçte; çok worker'da Redis'e taşınmalı)
 ```
