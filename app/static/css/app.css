@@ -187,7 +187,7 @@ button.link { background: none; border: none; padding: 0; color: var(--brand); t
 .modal-image img, .modal-image .placeholder-img {
   width: 100%;
   height: 300px;
-  object-fit: contain; /* Modal içindeki büyük resmi de kesmez */
+  object-fit: contain;
   border-radius: 8px;
 }
 .modal-text .price.large {
