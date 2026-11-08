@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Personel Yönetimi · Atölye Paneli{% endblock %}
+{% block content %}
+<h1>Personel Ekleme ve Yönetimi</h1>
+<p>Yalnızca atölye sahibi personel ekleyebilir, etkinleştirebilir veya erişimini durdurabilir.</p>
+<section class="card">
+<h2>Yeni personel ekle</h2>
+<form method="post" action="/personel">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <label>Ad soyad <input name="full_name" required minlength="2" maxlength="120"></label>
+  <label>E-posta <input name="email" type="email" required maxlength="254"></label>
+  <label>İlk şifre <input name="password" type="password" required minlength="10" maxlength="128" autocomplete="new-password"></label>
+  <button type="submit">Personel ekle</button>
+</form>
+</section>
+<section class="card">
+<h2>Atölye kullanıcıları</h2>
+<table>
+<thead><tr><th>Ad soyad</th><th>E-posta</th><th>Rol</th><th>Durum</th><th>İşlem</th></tr></thead>
+<tbody>
+{% for member in members %}
+<tr>
+  <td>{{ member.full_name }}</td><td>{{ member.email }}</td>
+  <td>{{ 'Sahip' if member.role.value == 'OWNER' else 'Personel' }}</td>
+  <td>{{ 'Aktif' if member.is_active else 'Pasif' }}</td>
+  <td>{% if member.role.value == 'STAFF' %}
+    <form method="post" action="/personel/{{ member.id }}/durum" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit">{{ 'Pasifleştir' if member.is_active else 'Etkinleştir' }}</button>
+    </form>
+  {% else %}—{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</section>
+{% endblock %}
