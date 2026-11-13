@@ -49,7 +49,7 @@
   <h2>Üretim fotoğrafları</h2>
   <div class="gallery">
     {% for m in media %}
-    <figure><img src="/medya/{{ m.id }}" alt="{{ m.caption or 'Üretim fotoğrafı' }}"><figcaption>{{ m.caption or '' }}{% if not m.is_public %} · <i>gizli</i>{% endif %}</figcaption></figure>
+    <figure><a href="/medya/{{ m.id }}"><img src="/medya/{{ m.id }}?boyut=kucuk" loading="lazy" alt="{{ m.caption or 'Üretim fotoğrafı' }}"></a><figcaption>{{ m.caption or '' }}{% if not m.is_public %} · <i>gizli</i>{% endif %}</figcaption></figure>
     {% else %}<p class="muted">Henüz fotoğraf yok.</p>{% endfor %}
   </div>
   <form method="post" action="/siparisler/{{ order.id }}/medya" enctype="multipart/form-data" class="row wrap">

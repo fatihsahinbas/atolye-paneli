@@ -18,7 +18,7 @@ from app.modules.auth.router import router as auth_router
 from app.modules.auth.staff import router as staff_router
 from app.modules.catalog.router import router as catalog_router
 from app.modules.customers.router import router as customers_router
-from app.modules.notifications.service import ConsoleNotifier, Notifier
+from app.modules.notifications.service import Notifier, build_notifier
 from app.modules.orders.router import router as orders_router
 from app.modules.payments.router import router as payments_router
 from app.modules.showcase.router import router as showcase_router
@@ -54,7 +54,8 @@ def create_app(settings: Settings | None = None, notifier: Notifier | None = Non
     app.state.SessionLocal = build_sessionmaker(engine)
     app.state.login_limiter = RateLimiter(settings.login_rate_limit, settings.login_rate_window_sec)
     app.state.register_limiter = RateLimiter(10, 3600)
-    app.state.notifier = notifier or ConsoleNotifier()
+    # Somut sınıf burada seçilmez; kanal .env'deki NOTIFY_CHANNEL'dan gelir.
+    app.state.notifier = notifier or build_notifier(settings)
     Path(settings.media_root).mkdir(parents=True, exist_ok=True)
 
     # --- Middleware -------------------------------------------------------
