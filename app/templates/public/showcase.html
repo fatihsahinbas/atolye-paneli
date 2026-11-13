@@ -10,26 +10,18 @@
 
 <div class="showcase-grid">
   {% for c in cards %}
-  <article class="product-card" onclick="openModal('modal-{{ loop.index }}')">
+  {# onclick yerine data-modal-id kullanıyoruz (CSP hatası almamak için) #}
+  <article class="product-card" data-modal-id="modal-{{ loop.index }}">
     <div class="product-image">
-      {# Sırayla resim atama #}
-      {% if loop.index == 1 %}
-        <img src="/static/img/sivas.jpg" alt="{{ c.product.name }}">
-      {% elif loop.index == 2 %}
-        <img src="/static/img/bursa.jpg" alt="{{ c.product.name }}">
-      {% elif loop.index == 3 %}
-        <img src="/static/img/hat.jpg" alt="{{ c.product.name }}">
-      {% elif loop.index == 4 %}
-        <img src="/static/img/papatya.jpg" alt="{{ c.product.name }}">
-      {% elif loop.index == 5 %}
-        <img src="/static/img/gul.jpg" alt="{{ c.product.name }}">
-      {% elif loop.index == 6 %}
-        <img src="/static/img/kurt.jpg" alt="{{ c.product.name }}">
+      {# Eğer ürünün resmi varsa göster, yoksa placeholder göster #}
+      {% if c.product.image_url %}
+        <img src="{{ c.product.image_url }}" alt="{{ c.product.name }}">
       {% else %}
         <div class="placeholder-img">Görsel Ekleyin</div>
       {% endif %}
     </div>
     <div class="product-info">
+      {# Dinamik İsim: Sistemde ne yazıyorsa o görünür #}
       <h3>{{ c.product.name }}</h3>
       <p class="price">{% if c.price %}{{ c.price|tl }}{% else %}Fiyat için sorunuz{% endif %}</p>
     </div>
@@ -38,22 +30,12 @@
   <!-- Ürün Detay Modalı -->
   <div id="modal-{{ loop.index }}" class="modal">
     <div class="modal-content">
-      <span class="close" onclick="closeModal('modal-{{ loop.index }}'); event.stopPropagation();">&times;</span>
+      {# onclick yerine sadece class bırakıyoruz, JS halledecek #}
+      <span class="close">&times;</span>
       <div class="modal-body">
         <div class="modal-image">
-          {# Modal içindeki resim (static/img/ yolu düzeltildi) #}
-          {% if loop.index == 1 %}
-            <img src="/static/img/sivas.jpg" alt="{{ c.product.name }}">
-          {% elif loop.index == 2 %}
-            <img src="/static/img/bursa.jpg" alt="{{ c.product.name }}">
-          {% elif loop.index == 3 %}
-            <img src="/static/img/hat.jpg" alt="{{ c.product.name }}">
-          {% elif loop.index == 4 %}
-            <img src="/static/img/papatya.jpg" alt="{{ c.product.name }}">
-          {% elif loop.index == 5 %}
-            <img src="/static/img/gul.jpg" alt="{{ c.product.name }}">
-          {% elif loop.index == 6 %}
-            <img src="/static/img/kurt.jpg" alt="{{ c.product.name }}">
+          {% if c.product.image_url %}
+            <img src="{{ c.product.image_url }}" alt="{{ c.product.name }}">
           {% else %}
             <div class="placeholder-img">Görsel Ekleyin</div>
           {% endif %}
@@ -79,18 +61,4 @@
   <p class="muted" style="grid-column: 1 / -1; text-align: center;">Vitrin hazırlanıyor.</p>
   {% endfor %}
 </div>
-
-<script>
-  function openModal(id) {
-    document.getElementById(id).style.display = "flex";
-  }
-  function closeModal(id) {
-    document.getElementById(id).style.display = "none";
-  }
-  window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-      event.target.style.display = "none";
-    }
-  }
-</script>
 {% endblock %}
