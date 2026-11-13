@@ -1,5 +1,6 @@
 # Sürümler sabit — güncelleme öncesi: pip-audit -r requirements.txt (Checklist #19)
 fastapi==0.162.0
+httpx==0.28.1  # SMS/WhatsApp adaptörü (PROJE 5)
 starlette==1.7.0
 uvicorn[standard]==0.54.0
 sqlalchemy==2.1.6
