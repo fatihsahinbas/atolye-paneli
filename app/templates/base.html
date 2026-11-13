@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Atölye Paneli{% endblock %}</title>
+  <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+  <link rel="icon" href="/static/img/logo.svg" type="image/svg+xml">
   <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
   <link rel="stylesheet" href="/static/css/app.css">
   <script src="/static/js/htmx.min.js" defer></script>
@@ -11,7 +12,9 @@
 <body {% if csrf_token %}hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'{% endif %}>
   {% if user %}
   <header class="topbar">
-    <a class="brand" href="/">◆ Atölye Paneli</a>
+    <a href="/" class="brand" aria-label="{{ APP_NAME }} ana sayfa">
+      <img src="/static/img/logo.svg" alt="">{{ APP_NAME }}
+    </a>
     <nav>
       <a href="/">Pano</a>
       <a href="/siparisler/yeni">Yeni sipariş</a>

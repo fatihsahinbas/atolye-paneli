@@ -1,9 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Giriş · Atölye Paneli{% endblock %}
+{% block title %}Giriş · {{ APP_NAME }}{% endblock %}
 {% block main_class %}auth{% endblock %}
 {% block content %}
 <div class="card narrow">
-  <h1>◆ Atölye Paneli</h1>
+  <img class="logo-lg" src="/static/img/logo.svg" alt="">
+  <h1>{{ APP_NAME }}</h1>
   <p class="muted">Siparişten teslimata, atölyenizin tek ekranı.</p>
   <form method="post" action="/giris" class="stack">
     <label>E-posta <input type="email" name="email" value="{{ email or '' }}" required autocomplete="username"></label>
