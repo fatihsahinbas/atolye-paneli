@@ -68,7 +68,8 @@ Atölye sahibi "Abonelik" sayfasında paketini görüp "Öde"ye basar, test kart
 - Tutar `Decimal`; kuruşa çevirirken `ROUND_HALF_UP`. Bildirimdeki tutar bizim kayıttaki tutarla eşleşmiyorsa abonelik uzamaz.
 - Aynı bildirim iki kez gelirse ikinci çağrı hiçbir şeyi değiştirmez
 - Pilot atölye (`is_pilot=True`): ödeme butonu yok, "Pilot programı: ücretsiz" yazar
-- Yeni kayıt olan atölyeye 14 günlük deneme süresi (`subscription_ends_at = now + 14 gün`)
+- Yeni kayıt olan atölyeye 14 günlük deneme süresi: `auth/service.py` → `register_workshop` içinde `subscription_ends_at = utcnow() + timedelta(days=14)`
+- `/abonelik` sayfası da `/abonelik/baslat` ucu da yalnız **OWNER** (`require_owner`); STAFF ödeme başlatamaz
 - Süresi biten atölyede üst bantta uyarı. **Engelleme H5'te** (bu hafta yalnızca uyarı).
 
 ### Akış
@@ -86,10 +87,12 @@ Atölye sahibi "Abonelik" sayfasında paketini görüp "Öde"ye basar, test kart
    - `add_months(dt, n)`: ay sonuna kırpar. 31 Ocak + 1 ay → 28 (ya da 29) Şubat.
    - `extend(current_end, now, months)`: Abonelik hâlâ geçerliyse **bitiş tarihinden**, bitmişse **şimdiden** itibaren uzatır. Erken ödeyen kullanıcı gün kaybetmez.
    - `is_active(ends_at, now, is_pilot) -> bool`
+   - SQLite tarihleri saat dilimi **olmadan** döndürür. DB'den gelen tarihi domain'e vermeden önce `as_aware()` (`core/deps.py`) ile sar, yoksa `TypeError` alırsın. Testte bir kez naive tarihle dene.
 3. **Model:**
-   - `Workshop`'a ekle: `plan_code` (`String(20)`, varsayılan `"PILOT"`), `subscription_ends_at` (`DateTime(timezone=True) | None`), `is_pilot` (`bool`, varsayılan `False`).
+   - `Workshop`'a ekle: `plan_code` (`String(20) | None`, varsayılan yok: henüz paket seçilmedi), `subscription_ends_at` (`DateTime(timezone=True) | None`), `is_pilot` (`bool`, varsayılan `False`). Pilotluk `plan_code` ile değil `is_pilot` ile anlaşılır.
    - Yeni model `Payment(TenantMixin)`: `merchant_oid` (unique, **yalnızca harf ve rakam**; PayTR başka karakter kabul etmez), `provider`, `plan_code`, `months`, `amount` (`Numeric(12,2)`), `status` (`PENDING/PAID/FAILED`), `provider_ref` (iyzico token), `paid_at`.
-   - Migration'ı üret ve **oku**. Son head `5b9916c3a44e`'ye bağlanmalı; mevcut atölyeler için `server_default` ver.
+   - Migration'ı üret ve **oku**. Mevcut atölyeler için `server_default` ver.
+   - Bu hafta Hasan, Çınar ve (H3'ten) Hayrettin, Alper de migration ekliyor. PR'ı açmadan **hemen önce** `git pull origin main` + `alembic heads`: iki head görürsen kendi dosyandaki `down_revision`'ı main'deki son head'e çevir. Aşağıdaki "Herkes için" tablosuna bak.
 4. **Protokol** (`app/modules/payments/providers.py`):
    ```python
    @dataclass(frozen=True)
@@ -123,18 +126,20 @@ Atölye sahibi "Abonelik" sayfasında paketini görüp "Öde"ye basar, test kart
    ```
    Doğrulama sağlayıcıya özeldir, protokole koyma: `IyzicoProvider.retrieve(token) -> PaymentResult` ve `PaytrProvider.verify_notification(form) -> PaymentResult` (imza yanlışsa `InvalidSignature` fırlatır).
 5. **Ortak iş kuralı** (`payments/service.py`): `apply_result(db, result) -> Payment`
-   - `merchant_oid` ile `Payment`'ı bul; yoksa `None` dön.
+   - `merchant_oid` ile `Payment`'ı **kilitleyerek** bul: `select(Payment).where(...).with_for_update()`. PostgreSQL'de aynı anda gelen iki bildirim sırayla işlenir (SQLite bunu yok sayar, testte sorun olmaz). Yoksa `None` dön.
    - Zaten `PAID` ise **hiçbir şey yapma** (idempotency).
-   - `result.amount != payment.amount` ise `FAILED`, log'a uyarı, abonelik uzamaz.
+   - `result.amount` **TL** cinsindendir (adaptör çevirir). `result.amount != payment.amount` ise `FAILED`, log'a uyarı, abonelik uzamaz.
    - Başarılıysa `PAID`, `paid_at`, `ws.subscription_ends_at = extend(...)`, `ws.plan_code = payment.plan_code`. **Tek commit.**
 6. **iyzico:** Resmi SDK'yı kullan: `iyzipay==1.0.46` (`requirements.txt`'e sabit sürümle ekle, `pip-audit` yeşil kalsın).
    - Testte SDK'yı dışarıdan verebilmek için: `IyzicoProvider(api_key, secret_key, base_url, sdk=iyzipay)`.
    - Alıcı bilgilerinde TC kimlik numarası **sorma**: test ortamında `"11111111111"` yeterli (KVKK).
    - Dönüş ucu `POST /odeme/iyzico/donus`. **Dikkat:** Bu istek iyzico'nun sayfasından gelir. Oturum çerezimiz `SameSite=Lax` olduğu için çerez gönderilmez; kullanıcı "giriş yapmamış" görünür. Bu yüzden ucu `current_user`'a bağlama. `Payment`'ı `provider_ref == token` ile bul, işi bitir, `/abonelik?sonuc=...`'ya 303 dön. O GET isteğinde çerez gelir.
    - CSRF formu yok (istek dışarıdan geliyor); güvenliği `retrieve` sorgusu sağlar.
+   - Dönüşte DB hatası olursa ödeme `PENDING` kalır ve iyzico tekrar denemez. `/abonelik` sayfasında `PENDING` ödemenin yanına "Durumu kontrol et" butonu koy: aynı `retrieve` + `apply_result` zincirini çalıştırır.
 7. **PayTR:** `httpx` ile `POST https://www.paytr.com/odeme/api/get-token`. `paytr_token`, alanların dokümandaki sırayla birleştirilmesi + `merchant_salt`, `merchant_key` ile HMAC-SHA256, base64.
    - `payment_amount` kuruş cinsinden (199,00 TL → `19900`); `user_basket` base64 JSON.
    - Bildirim ucu `POST /odeme/paytr/bildirim`: `verify_notification` → `apply_result` → `PlainTextResponse("OK")`. İmza yanlışsa 400.
+   - `total_amount` **kuruş** gelir: `verify_notification` içinde `Decimal(total_amount) / 100` ile TL'ye çevir. Çevirmezsen her doğru ödeme "tutar uyuşmazlığı"na düşer. İmzayı ise **ham** `total_amount` metniyle hesapla.
    - Karşılaştırmayı `safe_equals` ile yap (`core/security.py`'da var).
    - **Not:** PayTR bildirimi internetten erişilen bir adrese gönderir; `localhost`'a gelmez. Fatih'in sunucusu kurulana kadar `FakeProvider` + birim testleriyle ilerle. PayTR `user_ip` alanında yerel IP'yi kabul etmeyebilir: test için gerçek dış IP'ni ver.
 8. **CSP** (`app/main.py`):
@@ -145,7 +150,7 @@ Atölye sahibi "Abonelik" sayfasında paketini görüp "Öde"ye basar, test kart
    - `build_provider(settings)` fabrikası (`build_notifier`'a bak).
    - Kilit kontrolü burada: `payment_live` kapalıyken canlı adres → `RuntimeError`.
 10. **Pilot:** `scripts/make_pilot.py <slug>` atölyeyi `is_pilot=True` yapar. Pilotlar için ekran yok, komutu yalnızca Fatih çalıştırır.
-11. **Ekran:** `GET /abonelik` (yalnız OWNER). Gösterilenler: paket, bitiş tarihi, "Öde" butonu (CSRF'li form), son 10 ödeme (`scoped(Payment, user)`).
+11. **Ekran:** `GET /abonelik` (yalnız OWNER). Gösterilenler: mevcut paket ve bitiş tarihi; ücretli paketler (`monthly_price > 0`) arasından **seçim** + "Öde" butonu (CSRF'li form, `plan_code` alanı); son 10 ödeme (`scoped(Payment, user).order_by(Payment.id.desc()).limit(10)`).
 12. **Mevcut `/webhooks/odeme`:** Dokunma; genel HMAC örneği olarak kalıyor. TODO yorumunu "PayTR bildirimi `/odeme/paytr/bildirim`'de" diye güncelle.
 13. **Testler** (`tests/test_subscription.py`, `tests/test_payments.py`):
     - `extend`: süresi bitmiş → şimdiden; geçerli → bitiş tarihinden; 31 Ocak → Şubat sonu
@@ -157,6 +162,9 @@ Atölye sahibi "Abonelik" sayfasında paketini görüp "Öde"ye basar, test kart
     - `payment_live=False` + `paytr_test_mode=0` → uygulama açılmıyor
     - B atölyesi `/abonelik`'te A'nın ödemelerini görmüyor
     - Pilot atölyede "Öde" butonu yok
+    - STAFF `POST /abonelik/baslat` → 403 · `plan_code=PILOT` (0 TL) ile başlatma → 400
+    - PayTR `total_amount="19900"` bildirimi 199,00 TL'lik ödemeyi `PAID` yapar
+    - Yeni kayıt → `subscription_ends_at` ≈ şimdi + 14 gün
     - `repr(settings)` ve `caplog` içinde anahtarlar yok
 
 ### Dikkat
@@ -273,8 +281,8 @@ Usta sipariş açarken termini kafadan yazıyor ve gecikmeyi panoda fark etmiyor
 - `Product.avg_production_days: int | None` (migration). Ürün formundaki alanı Hayrettin'le konuşarak ekle.
 - `app/domain/deadline.py`:
   - `add_business_days(start: date, days: int, holidays: frozenset[date]) -> date`
-  - `deadline_state(due: date | None, today: date) -> "none" | "ok" | "soon" | "late"`
-- Sipariş formunda termin önerisi: kalemlerdeki **en uzun** süre. Kullanıcı değiştirebilir.
+  - `deadline_state(due: date | None, today: date, status: OrderStatus) -> "none" | "ok" | "soon" | "late"`
+- Sipariş formunda termin önerisi: kalemlerdeki **en uzun** süre. Süresi girilmemiş (`None`) ürünler hesaba katılmaz; hiçbirinde süre yoksa öneri yok, alan boş kalır. Kullanıcı değiştirebilir.
 - Panoda kartlar `.ticket--soon` ve `.ticket--late` sınıflarıyla işaretlenir; renk `:root`'tan gelir
 - `DELIVERED` ve `CANCELLED` siparişler hiçbir zaman "late" değildir
 
@@ -283,10 +291,10 @@ Usta sipariş açarken termini kafadan yazıyor ve gecikmeyi panoda fark etmiyor
 2. `deadline.py` + `tests/test_deadline.py` **önce**:
    - Cuma + 1 iş günü → Pazartesi
    - 28 Ekim 2026 Çarşamba + 1 iş günü → 30 Ekim Cuma (29 Ekim atlanır; tatil listesini `TR_HOLIDAYS_2026_2027` sabiti olarak domain'e yaz; dini bayram tarihleri her yıl değişir, kaynağını yorumda belirt)
-   - Termin bugünden 2 gün sonra → `soon`; dün → `late`; `None` → `none`
+   - Termin bugünden 2 gün sonra → `soon`; dün → `late`; `None` → `none`; terminli ama `DELIVERED` ya da `CANCELLED` → `ok`
 3. Migration: `avg_production_days`. Son head'e bağla, dosyayı oku.
 4. Termin önerisi: `GET /siparisler/termin-onerisi?urun=1&urun=3` HTMX parçası ya da form yüklenirken hesap. Sayfaya özel JS **`app.js`**'te (sipariş formu senin dosyan); `board.js`'e karıştırma.
-5. Pano: şablonda `deadline_state(order.due_date, today)` sonucunu sınıfa çevir. `today`'i router'dan ver, şablonda `now()` çağırma (test edilemez).
+5. Pano: şablonda `deadline_state(order.due_date, today, order.status)` sonucunu sınıfa çevir. `today`'i router'dan ver, şablonda `now()` çağırma (test edilemez).
 6. **Stretch:** Her sabah "bugün terminli / geciken işler" özeti. Bunu bir `scripts/daily_digest.py` olarak yaz; Deha'nın `Notifier`'ını kullansın. Cron'a bağlama işi Fatih'in deploy'unda.
 7. Testler: domain testleri + pano HTML'inde geciken siparişin kartında `ticket--late` var + B atölyesinin siparişi listede yok.
 
@@ -376,5 +384,6 @@ PR + telefonda takip sayfası ekran kaydı + test çıktısı.
 | Eski bir branch'ten PR açıldı; birleşse main'deki 877 satır silinecekti | Her işe `git switch main && git pull` ile başla, **yeni** branch aç. PR'ı açmadan önce GitHub'daki "Files changed" sekmesine bak: silmediğin dosyayı siliyor görünüyorsa dur. |
 | Aynı iş GitHub web arayüzünden ikinci kez yüklendi | Web upload yok. `git add` → `git commit` → `git push` → PR. |
 | Yapay zekânın ürettiği kod projeye uymadı, mevcut modülleri silecekti | Yapay zekâ kullanabilirsin, ama önce mevcut dosyayı ona **göster** ve çıktıyı satır satır oku. Anlamadığın satırı PR'a koyma. |
+| (Bu hafta riski) Birden çok kişi aynı anda migration ekliyor | İki PR aynı head'e bağlanırsa main'de **iki head** olur ve `alembic upgrade head` durur. PR'dan hemen önce `git pull origin main && alembic heads`; tek satır görmelisin. İki satırsa kendi dosyandaki `down_revision`'ı düzelt. |
 | Kart "tamamlandı" işaretlendi, iş bitmemişti | Tamamlandı = PR açık + testler yeşil. Önce PR. |
 | Vitrinde kulüp logosu kullanıldı | Satılacak üründe başkasının markası ya da lisanslı görsel olmaz. |
