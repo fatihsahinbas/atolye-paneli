@@ -1,9 +1,9 @@
 import io
 import re
 
-from tests.conftest import csrf, make_client, register, seed_order
+from tests.conftest import csrf, make_client, make_image, register, seed_order
 
-PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+PNG = make_image((800, 600), "PNG")
 
 
 def test_order_flow_and_notification(app, notifier):
@@ -77,7 +77,7 @@ def test_upload_validation_and_public_media(app):
                files={"file": ("../../etc/passwd.png", io.BytesIO(PNG), "image/png")})
     assert r.status_code == 303
     detail = c.get(f"/siparisler/{oid}").text
-    mid = re.search(r'src="/medya/(\d+)"', detail).group(1)
+    mid = re.search(r'href="/medya/(\d+)"', detail).group(1)
     assert c.get(f"/medya/{mid}").headers["content-type"] == "image/png"
     code = re.search(r"/t/([\w-]+)</code>", detail).group(1)
     assert make_client(app).get(f"/t/{code}/medya/{mid}").status_code == 200
