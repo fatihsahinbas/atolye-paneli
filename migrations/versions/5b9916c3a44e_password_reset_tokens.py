@@ -1,13 +1,13 @@
 """H3 password reset token table
 
 Revision ID: 5b9916c3a44e
-Revises: dc757c9582c5
+Revises: a1f3c9e2b7d4
 """
 from alembic import op
 import sqlalchemy as sa
 
 revision = "5b9916c3a44e"
-down_revision = "dc757c9582c5"
+down_revision = "a1f3c9e2b7d4"
 branch_labels = None
 depends_on = None
 

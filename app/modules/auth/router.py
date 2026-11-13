@@ -1,18 +1,17 @@
-from fastapi import APIRouter, Depends, Form, Request, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
-from app.core.security import new_token, safe_equals
 from app.core.db import get_db
 from app.core.deps import SESSION_COOKIE, csrf_protect, current_user, load_session
+from app.core.security import new_token, safe_equals
 from app.core.templating import render
 from app.modules.auth.models import User
 from app.modules.auth.password_reset import complete_reset, request_reset, valid_reset
 from app.modules.auth.reset_email import send_reset_email
-from app.modules.auth.schemas import _email
-from app.modules.auth.schemas import LoginIn, RegisterIn, first_error
+from app.modules.auth.schemas import LoginIn, RegisterIn, _email, first_error
 from app.modules.auth.service import (
     AuthError,
     authenticate,
@@ -174,7 +173,8 @@ def forgot_password(request: Request, db: Session = Depends(get_db),
         # Sunucu hatası/kullanıcı varlığı ayrımını istemciye sızdırma.
         import logging
         logging.getLogger("atolye.auth").exception("Şifre sıfırlama e-postası gönderilemedi")
-    return render(request, "auth/forgot_password.html", {"success": "Bu e-posta kayıtlıysa sıfırlama bağlantısı gönderildi."})
+    msg = "Bu e-posta kayıtlıysa sıfırlama bağlantısı gönderildi."
+    return render(request, "auth/forgot_password.html", {"success": msg})
 
 
 @router.get("/sifre-yenile")

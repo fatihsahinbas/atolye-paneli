@@ -5,7 +5,7 @@ from urllib.parse import parse_qs, urlsplit
 from sqlalchemy import select
 
 from app.core.db import utcnow
-from app.modules.auth.models import PasswordResetToken, User
+from app.modules.auth.models import PasswordResetToken
 from tests.conftest import make_client, register
 
 
