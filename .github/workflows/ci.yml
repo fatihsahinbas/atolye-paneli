@@ -1,0 +1,52 @@
+# Her PR'da ve main'e her birleştirmede çalışır.
+# Kırmızı CI = PR birleştirilmez (main ruleset'inde "Require status checks" → "ci" seçili olmalı).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ENV: test
+      # Sadece CI için geçici anahtar; gerçek anahtar asla repoya girmez
+      SECRET_KEY: ci-only-not-a-real-secret-0123456789abcdef
+      DATABASE_URL: sqlite:///./ci.db
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Testler (pytest)
+        run: pytest -q
+
+      - name: Migration'lar modellerle uyumlu mu? (alembic check)
+        # Modelde değişiklik yapıp migration yazmayı unutan PR burada kırmızı olur.
+        # Çözüm: alembic revision --autogenerate -m "aciklama"
+        run: |
+          alembic upgrade head
+          alembic check
+
+      - name: Paket güvenlik taraması (pip-audit)
+        run: pip-audit -r requirements.txt

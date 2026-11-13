@@ -23,6 +23,7 @@
       <a href="/">Pano</a>
       <a href="/siparisler/yeni">Yeni sipariş</a>
       <a href="/musteriler">Müşteriler</a>
+      {% if user.role.value == "OWNER" %}<a href="/personel">Personel</a>{% endif %}
       <a href="/urunler">Ürünler</a>
       <a href="/v/{{ user.workshop.slug }}" target="_blank" rel="noopener">Vitrin ↗</a>
     </nav>

@@ -36,6 +36,9 @@ class ProductIn(BaseModel):
             raise ValueError("Sabit fiyatlı üründe fiyat zorunlu")
         if self.pricing_type == PricingType.GOLD and (self.weight_g is None or self.purity_milyem is None):
             raise ValueError("Altın üründe gram ve ayar zorunlu")
+        if self.pricing_type == PricingType.GOLD_COST_PLUS:
+            # Fiyat motoru hazır; ürün alanları + migration (kolon 10 → 20 karakter) gelince açılacak.
+            raise ValueError("Maliyet + kâr fiyatlaması henüz desteklenmiyor")
         return self
 
 
