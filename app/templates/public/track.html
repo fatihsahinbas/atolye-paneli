@@ -21,7 +21,7 @@
   {% if media %}
   <h2>Siparişinizden kareler</h2>
   <div class="gallery">
-    {% for m in media %}<figure><img src="/t/{{ order.tracking_code }}/medya/{{ m.id }}" alt="{{ m.caption or 'Üretim fotoğrafı' }}"><figcaption>{{ m.caption or '' }}</figcaption></figure>{% endfor %}
+    {% for m in media %}<figure><a href="/t/{{ order.tracking_code }}/medya/{{ m.id }}"><img src="/t/{{ order.tracking_code }}/medya/{{ m.id }}?boyut=kucuk" loading="lazy" alt="{{ m.caption or 'Üretim fotoğrafı' }}"></a><figcaption>{{ m.caption or '' }}</figcaption></figure>{% endfor %}
   </div>
   {% endif %}
 </div>

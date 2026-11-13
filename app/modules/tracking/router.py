@@ -3,7 +3,6 @@
 Erişim anahtarı = tahmin edilemez tracking_code. Sayfada yalnızca ilk ad görünür (KVKK).
 """
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -11,7 +10,7 @@ from app.core.db import get_db
 from app.core.templating import render
 from app.domain.order_status import BOARD_ORDER, OrderStatus
 from app.modules.media.models import Media
-from app.modules.media.service import media_path
+from app.modules.media.service import media_response
 from app.modules.orders.models import Order
 from app.modules.workshop.models import Workshop
 
@@ -42,11 +41,11 @@ def track(request: Request, code: str, db: Session = Depends(get_db)):
 
 
 @router.get("/{code}/medya/{media_id}")
-def track_media(request: Request, code: str, media_id: int, db: Session = Depends(get_db)):
+def track_media(request: Request, code: str, media_id: int, boyut: str | None = None, db: Session = Depends(get_db)):
     order = _order_by_code(db, code)
     m = db.scalar(
         select(Media).where(Media.id == media_id, Media.order_id == order.id, Media.is_public.is_(True))
     )
     if m is None:
         raise HTTPException(404)
-    return FileResponse(media_path(request.app.state.settings.media_root, m.stored_name), media_type=m.content_type)
+    return media_response(request.app.state.settings.media_root, m, boyut)

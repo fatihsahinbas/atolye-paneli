@@ -1,7 +1,7 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -15,7 +15,7 @@ from app.modules.auth.models import User
 from app.modules.catalog.models import Product
 from app.modules.customers.models import Customer
 from app.modules.media.models import Media
-from app.modules.media.service import UploadError, media_path, save_image
+from app.modules.media.service import UploadError, media_response, save_image
 from app.modules.notifications.service import notify_status_change
 from app.modules.orders.models import Order
 from app.modules.orders.service import NewItem, change_status, create_order
@@ -120,6 +120,12 @@ async def order_media(
 
 
 @router.get("/medya/{media_id}")
-def media_file(request: Request, media_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)):
+def media_file(
+    request: Request,
+    media_id: int,
+    boyut: str | None = None,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
     m = get_owned(db, Media, media_id, user)
-    return FileResponse(media_path(request.app.state.settings.media_root, m.stored_name), media_type=m.content_type)
+    return media_response(request.app.state.settings.media_root, m, boyut)
