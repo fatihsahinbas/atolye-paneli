@@ -1,24 +1,16 @@
-// Ürün kartlarına tıklama olayını JS ile dinle (CSP uyumlu)
-document.addEventListener("DOMContentLoaded", function() {
-  const cards = document.querySelectorAll('.product-card');
-  cards.forEach(card => {
-    card.addEventListener('click', function() {
-      const modalId = this.getAttribute('data-modal-id');
-      if (modalId) {
-        document.getElementById(modalId).style.display = "flex";
-      }
-    });
-  });
-});
+// Sipariş formu: ürün veya adet değişince fiyat önizlemesini sunucudan çek.
+// Inline <script> yok — CSP 'self' ile uyumlu.
+document.addEventListener("DOMContentLoaded", () => {
+  const product = document.getElementById("product");
+  const qty = document.querySelector('input[name="quantity"]');
+  if (!product || !qty || !window.htmx) return;
 
-// Modal (Detay Penceresi) Kapatma İşlemleri
-document.addEventListener("click", function(event) {
-  // Çarpı (X) butonuna basıldıysa
-  if (event.target.classList.contains('close')) {
-    event.target.closest('.modal').style.display = "none";
-  }
-  // Modalın dışındaki karanlık alana tıklandıysa
-  if (event.target.classList.contains('modal')) {
-    event.target.style.display = "none";
-  }
+  const refresh = () => {
+    const id = encodeURIComponent(product.value);
+    const adet = encodeURIComponent(qty.value || "1");
+    htmx.ajax("GET", `/urunler/${id}/fiyat?adet=${adet}`, { target: "#price", swap: "innerHTML" });
+  };
+  product.addEventListener("change", refresh);
+  qty.addEventListener("input", refresh);
+  refresh();
 });

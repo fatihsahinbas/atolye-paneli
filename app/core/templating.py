@@ -44,5 +44,6 @@ def render(request: Request, name: str, ctx: dict[str, Any] | None = None, statu
     base = {
         "user": sess.user if sess else None,
         "csrf_token": sess.csrf_token if sess else "",
+        "APP_NAME": request.app.state.settings.app_name,
     }
     return templates.TemplateResponse(request, name, {**base, **(ctx or {})}, status_code=status_code)

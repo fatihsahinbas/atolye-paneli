@@ -8,6 +8,7 @@ from app.core.templating import render
 from app.domain.pricing import PricingError
 from app.modules.catalog.models import Product
 from app.modules.catalog.service import quote
+from app.modules.notifications.service import normalize_phone
 from app.modules.workshop.models import Workshop
 
 router = APIRouter(prefix="/v", tags=["showcase"])
@@ -30,4 +31,14 @@ def showcase(request: Request, slug: str, db: Session = Depends(get_db)):
         except PricingError:
             price = None  # "Fiyat için sorunuz"
         cards.append({"product": p, "price": price})
-    return render(request, "public/showcase.html", {"workshop": ws, "cards": cards})
+    return render(request, "public/showcase.html", {"workshop": ws, "cards": cards, "wa_phone": _wa_phone(ws.phone)})
+
+
+def _wa_phone(raw: str | None) -> str | None:
+    """wa.me için yalnız rakamlar (905321112233). Telefon yoksa ya da geçersizse buton gösterilmez."""
+    if not raw:
+        return None
+    try:
+        return normalize_phone(raw).lstrip("+")
+    except ValueError:
+        return None
