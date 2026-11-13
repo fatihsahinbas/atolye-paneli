@@ -5,6 +5,8 @@ Bir kararı değiştirmek için yeni bir satır yazılır; eskisi silinmez, "de�
 
 | Tarih | Karar | Gerekçe | Etkisi |
 |---|---|---|---|
+| 13 Kasım 2026 | **Ödeme iki sağlayıcıyı destekler: iyzico ve PayTR.** | Sağlayıcı ilerde değişebilir; `Notifier`'daki protokol deseni ödemede de uygulanır. | `PaymentProvider` protokolü + `FakeProvider` / `IyzicoProvider` / `PaytrProvider`. Seçim `.env`'de `PAYMENT_PROVIDER`. `PAYMENT_LIVE=false` iken canlı adresle uygulama açılmaz. |
+| 13 Kasım 2026 | **Atölye telefonu giriş ekranı (`/atolye/ayarlar`) Seher'de.** | Vitrindeki WhatsApp butonu `workshop.phone`'a bağlı, ama numarayı girecek ekran yoktu. | H4 PROJE 2. Telefon `normalize_phone` ile E.164 kaydedilir. |
 | 13 Kasım 2026 | **Ürün adı "Atölye Paneli" olarak kalıyor.** | İsim oylaması yapılmadı; mevcut ad kodda, Trello'da ve sunumda zaten var. | Yeniden adlandırma işi yok. `Settings.app_name` tek yerden değiştirilebilir durumda kalır. |
 | 13 Kasım 2026 | **Fatura kesen bir yapı (şahıs/limited) kurulmuyor; ürün ders projesi olarak ilerliyor.** | Eğitmenin iş sözleşmesindeki yan iş maddesi. | H4 abonelik ödemesi iyzico/PayTR **test (sandbox)** ortamında yapılır. Gerçek tahsilat yok. |
 | 13 Kasım 2026 | **Demo günü hedefi güncellendi.** | Gerçek ödeme alınmayacak. | "Ödeme yapmış atölye" yerine: pilot atölyelerin gerçek siparişle kullanımı + uçtan uca **test ödemesi** (abonelik başlat → webhook → abonelik uzat). |

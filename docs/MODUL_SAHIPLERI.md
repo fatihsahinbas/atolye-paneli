@@ -24,5 +24,6 @@ Her haftanın ödevleri "PROJE N" formatında yazılır: **Kazanım** + **Adım 
 |---|---|
 | H2 (9–13 Kasım) | [docs/odevler/hafta-2.md](odevler/hafta-2.md) |
 | H3 (16–20 Kasım) | [docs/odevler/hafta-3.md](odevler/hafta-3.md) |
+| H4 (23–27 Kasım) | [docs/odevler/hafta-4.md](odevler/hafta-4.md) |
 
 Kararlar ve gerekçeleri: [docs/KARARLAR.md](KARARLAR.md)
