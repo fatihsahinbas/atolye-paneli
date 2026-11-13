@@ -25,6 +25,14 @@ class Settings(BaseSettings):
     payment_webhook_secret: str = ""  # boşsa webhook kapalı
     webhook_tolerance_sec: int = 300
 
+    # Bildirim kanalı: console | sms | whatsapp (PROJE 5 · Deha)
+    # Anahtarlar yalnızca .env'den gelir; repr=False → log/hata çıktısında görünmez.
+    notify_channel: str = "console"
+    sms_api_url: str = ""
+    sms_api_key: str = Field(default="", repr=False)
+    whatsapp_api_url: str = ""
+    whatsapp_api_key: str = Field(default="", repr=False)
+
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_from: str = ""

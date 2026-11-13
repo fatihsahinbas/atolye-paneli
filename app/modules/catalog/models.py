@@ -15,7 +15,7 @@ class Product(TenantMixin, TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(120))
     description: Mapped[str | None] = mapped_column(Text)
     pricing_type: Mapped[PricingType] = mapped_column(
-        Enum(PricingType, native_enum=False, length=10), default=PricingType.FIXED
+        Enum(PricingType, native_enum=False, length=20), default=PricingType.FIXED
     )
     # FIXED
     base_price: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
