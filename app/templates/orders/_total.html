@@ -1,0 +1,17 @@
+{% if error %}
+    <div class="alert">
+        {{ error }}
+    </div>
+{% else %}
+    <div class="price-box">
+        <div class="row-between">
+            <span>Ara toplam</span>
+            <strong>{{ "%.2f"|format(total_net) }} TL</strong>
+        </div>
+
+        <div class="row-between">
+            <span>Genel toplam</span>
+            <strong>{{ "%.2f"|format(total_gross) }} TL</strong>
+        </div>
+    </div>
+{% endif %}

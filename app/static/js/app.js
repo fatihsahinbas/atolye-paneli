@@ -1,16 +1,61 @@
-// Sipariş formu: ürün veya adet değişince fiyat önizlemesini sunucudan çek.
-// Inline <script> yok — CSP 'self' ile uyumlu.
 document.addEventListener("DOMContentLoaded", () => {
-  const product = document.getElementById("product");
-  const qty = document.querySelector('input[name="quantity"]');
-  if (!product || !qty || !window.htmx) return;
+    const items = document.getElementById("order-items");
+    const total = document.getElementById("order-total");
 
-  const refresh = () => {
-    const id = encodeURIComponent(product.value);
-    const adet = encodeURIComponent(qty.value || "1");
-    htmx.ajax("GET", `/urunler/${id}/fiyat?adet=${adet}`, { target: "#price", swap: "innerHTML" });
-  };
-  product.addEventListener("change", refresh);
-  qty.addEventListener("input", refresh);
-  refresh();
+    if (!items || !total || !window.htmx) return;
+
+    // Toplam fiyatı yeniden hesapla
+    function refreshTotal() {
+        htmx.trigger(total, "recalculate");
+    }
+
+    // Ürün veya adet değişince hesapla
+    items.addEventListener("change", (event) => {
+        if (
+            event.target.matches('select[name="product_id"]') ||
+            event.target.matches('input[name="quantity"]')
+        ) {
+            refreshTotal();
+        }
+    });
+
+    items.addEventListener("input", (event) => {
+        if (event.target.matches('input[name="quantity"]')) {
+            refreshTotal();
+        }
+    });
+
+    // Son kalemin silinmesini engelle
+    items.addEventListener("click", (event) => {
+        const button = event.target.closest(
+            'button[hx-post="/siparisler/kalem/sil"]'
+        );
+
+        if (!button) return;
+
+        const rows = items.querySelectorAll("[data-order-item]");
+
+        if (rows.length <= 1) {
+            event.preventDefault();
+            event.stopPropagation();
+            alert("Siparişte en az bir ürün bulunmalıdır.");
+        }
+    }, true);
+
+    // HTMX işlemi tamamlandığında toplamı güncelle
+    document.body.addEventListener("htmx:afterSettle", (event) => {
+        const element = event.detail.elt;
+
+        if (!element) return;
+
+        if (
+            element.matches?.('button[hx-get="/siparisler/kalem/yeni"]') ||
+            element.matches?.('button[hx-post="/siparisler/kalem/sil"]')
+        ) {
+            refreshTotal();
+        }
+    });
+
+    // İlk açılışta hesapla
+    refreshTotal();
 });
