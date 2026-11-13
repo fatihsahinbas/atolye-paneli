@@ -10,7 +10,6 @@ from app.core.security import DUMMY_HASH, hash_password, new_token, token_digest
 from app.modules.auth.models import Role, User, UserSession
 from app.modules.auth.schemas import LoginIn, RegisterIn
 from app.modules.media.models import Media
-from app.modules.media.service import thumb_name
 from app.modules.workshop.models import Workshop
 
 
@@ -84,7 +83,6 @@ def delete_account(db: Session, user: User, password: str, media_root: str) -> N
         db.commit()
         for name in names:
             (Path(media_root) / name).unlink(missing_ok=True)
-            (Path(media_root) / thumb_name(name)).unlink(missing_ok=True)
     else:
         db.execute(delete(User).where(User.id == user.id))
         db.commit()
