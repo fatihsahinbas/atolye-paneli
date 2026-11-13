@@ -10,6 +10,8 @@
     <label>Şifre <input type="password" name="password" required autocomplete="current-password"></label>
     <button class="primary">Giriş yap</button>
   </form>
+  {% if request.query_params.get("reset") == "ok" %}<p role="status">Şifreniz yenilendi. Yeni şifrenizle giriş yapın.</p>{% endif %}
+  <p class="muted small"><a href="/sifremi-unuttum">Şifremi unuttum</a></p>
   <p class="muted small">Hesabınız yok mu? <a href="/kayit">Atölyenizi kaydedin</a></p>
 </div>
 {% endblock %}

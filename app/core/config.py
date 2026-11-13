@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     payment_webhook_secret: str = ""  # boşsa webhook kapalı
     webhook_tolerance_sec: int = 300
 
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_from: str = ""
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_starttls: bool = True
+
     login_rate_limit: int = 5
     login_rate_window_sec: int = 900
 
