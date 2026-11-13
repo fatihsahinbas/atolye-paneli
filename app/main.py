@@ -15,6 +15,7 @@ from app.core.logging import setup_logging
 from app.core.ratelimit import RateLimiter
 from app.core.templating import render
 from app.modules.auth.router import router as auth_router
+from app.modules.auth.staff import router as staff_router
 from app.modules.catalog.router import router as catalog_router
 from app.modules.customers.router import router as customers_router
 from app.modules.notifications.service import Notifier, build_notifier
@@ -100,7 +101,7 @@ def create_app(settings: Settings | None = None, notifier: Notifier | None = Non
 
     # --- Router'lar ---------------------------------------------------------
     app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
-    for r in (auth_router, orders_router, customers_router, catalog_router,
+    for r in (auth_router, staff_router, orders_router, customers_router, catalog_router,
               tracking_router, showcase_router, payments_router):
         app.include_router(r)
 

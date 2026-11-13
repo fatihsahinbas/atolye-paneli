@@ -77,3 +77,14 @@ cp .env.example .env   # prod bölümünü doldur
 docker compose up -d --build
 ```
 Caddy otomatik sertifika alır. DB portu dışarı açılmaz. Yedek: `scripts/backup.sh` (gpg şifreli).
+
+## Personel Ekleme ve Yönetimi (H2 ödevi)
+
+Atölye sahibi giriş yaptıktan sonra üst menüdeki **Personel** üzerinden `/personel` sayfasını açar.
+- Ad soyad, e-posta ve en az 10 karakterlik geçici/ilk şifreyle **STAFF** kullanıcısı oluşturabilir.
+- Personel listesi, rolü ve aktif/pasif durumu görüntülenir.
+- Personel erişimi pasifleştirilebilir ve tekrar etkinleştirilebilir. Pasifleştirme mevcut oturumları iptal eder.
+- İşlemler OWNER rolü, atölye kapsamı ve CSRF doğrulaması ile korunur.
+- OWNER hesabı bu ekrandan pasifleştirilemez. E-posta sistem genelinde benzersizdir.
+
+Kontrol: `pytest -q tests/test_staff.py`. Üretimde personel şifreleri güvenli kanaldan iletilmelidir; ilk girişte şifre değiştirmeyi zorunlu kılma ileriki geliştirmedir.
