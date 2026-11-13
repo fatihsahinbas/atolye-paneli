@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_from: str = ""
     smtp_user: str = ""
-    smtp_password: str = ""
+    smtp_password: str = Field(default="", repr=False)
     smtp_starttls: bool = True
 
     login_rate_limit: int = 5
