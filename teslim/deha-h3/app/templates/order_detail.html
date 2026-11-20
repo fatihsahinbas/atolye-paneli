@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Sipariş #{{ order.id }}</title>
+</head>
+<body>
+  <h1>Sipariş #{{ order.id }} — {{ order.status }}</h1>
+
+  <h2>Gönderilen Bildirimler</h2>
+  <table border="1" cellpadding="6">
+    <thead>
+      <tr>
+        <th>Kanal</th>
+        <th>Zaman</th>
+        <th>Durum</th>
+        <th>Aksiyon</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in notifications %}
+      <tr>
+        <td>{{ n.channel }}</td>
+        <td>{{ n.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+        <td>{{ n.status }}</td>
+        <td>
+          {% if n.status == "FAILED" %}
+          <form method="post" action="/bildirimler/{{ n.id }}/tekrar">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit">Tekrar gönder</button>
+          </form>
+          {% else %}
+          —
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
