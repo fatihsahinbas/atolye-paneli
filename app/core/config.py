@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     whatsapp_api_url: str = ""
     whatsapp_api_key: str = Field(default="", repr=False)
 
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_from: str = ""
+    smtp_user: str = ""
+    smtp_password: str = Field(default="", repr=False)
+    smtp_starttls: bool = True
+
     login_rate_limit: int = 5
     login_rate_window_sec: int = 900
 

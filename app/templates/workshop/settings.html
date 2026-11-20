@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Atölye ayarları · {{ APP_NAME }}{% endblock %}
+{% block content %}
+<h1>Atölye ayarları</h1>
+{% if saved %}<div class="notice-ok" role="status">Kaydedildi.</div>{% endif %}
+<form method="post" action="/atolye/ayarlar" class="card stack">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <label>Atölye adı
+    <input name="name" value="{{ form.name }}" required minlength="2" maxlength="120" autocomplete="organization">
+  </label>
+  <label>Telefon (WhatsApp)
+    <input type="tel" name="phone" value="{{ form.phone }}" inputmode="tel" autocomplete="tel"
+           placeholder="05xx xxx xx xx" maxlength="30">
+    <span class="muted small">Vitrindeki "WhatsApp ile sor" butonu bu numaraya gider. Boş bırakırsanız buton gösterilmez.</span>
+  </label>
+  <div class="row"><button>Kaydet</button></div>
+</form>
+<div class="card">
+  <h2>Vitrin bağlantısı</h2>
+  <p><code>/v/{{ workshop.slug }}</code></p>
+  <p class="muted small">Bu bağlantı değiştirilemez; müşterilerle paylaştığınız linkler bozulmasın diye sabittir.</p>
+  <a href="/v/{{ workshop.slug }}" target="_blank" rel="noopener">Vitrini aç ↗</a>
+</div>
+{% endblock %}

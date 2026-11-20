@@ -1,18 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Giriş · Atölye Paneli<p class="muted small" style="text-align:center"><a href="/fiyatlar">Paketler ve Pilot Fiyatlandırması →</a></p>
-{% endblock %}
-{% block main_class %}auth<p class="muted small" style="text-align:center"><a href="/fiyatlar">Paketler ve Pilot Fiyatlandırması →</a></p>
-{% endblock %}
+{% block title %}Giriş · {{ APP_NAME }}{% endblock %}
+{% block main_class %}auth{% endblock %}
 {% block content %}
 <div class="card narrow">
-  <h1>◆ Atölye Paneli</h1>
+  <img class="logo-lg" src="/static/img/logo.svg" alt="">
+  <h1>{{ APP_NAME }}</h1>
   <p class="muted">Siparişten teslimata, atölyenizin tek ekranı.</p>
   <form method="post" action="/giris" class="stack">
     <label>E-posta <input type="email" name="email" value="{{ email or '' }}" required autocomplete="username"></label>
     <label>Şifre <input type="password" name="password" required autocomplete="current-password"></label>
     <button class="primary">Giriş yap</button>
   </form>
+  {% if request.query_params.get("reset") == "ok" %}<p role="status">Şifreniz yenilendi. Yeni şifrenizle giriş yapın.</p>{% endif %}
+  <p class="muted small"><a href="/sifremi-unuttum">Şifremi unuttum</a></p>
   <p class="muted small">Hesabınız yok mu? <a href="/kayit">Atölyenizi kaydedin</a></p>
 </div>
-<p class="muted small" style="text-align:center"><a href="/fiyatlar">Paketler ve Pilot Fiyatlandırması →</a></p>
+<p class="muted small auth-links"><a href="/fiyatlar">Paketler ve Pilot Fiyatlandırması →</a></p>
 {% endblock %}

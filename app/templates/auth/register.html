@@ -1,8 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Kayıt · Atölye Paneli<p class="muted small" style="text-align:center"><a href="/fiyatlar">Paketler ve Pilot Fiyatlandırması →</a></p>
-{% endblock %}
-{% block main_class %}auth<p class="muted small" style="text-align:center"><a href="/fiyatlar">Paketler ve Pilot Fiyatlandırması →</a></p>
-{% endblock %}
+{% block title %}Kayıt · {{ APP_NAME }}{% endblock %}
+{% block main_class %}auth{% endblock %}
 {% block content %}
 <div class="card narrow">
   <h1>Atölyenizi kaydedin</h1>
@@ -18,5 +16,5 @@
   </form>
   <p class="muted small">Zaten hesabınız var mı? <a href="/giris">Giriş yapın</a></p>
 </div>
-<p class="muted small" style="text-align:center"><a href="/fiyatlar">Paketler ve Pilot Fiyatlandırması →</a></p>
+<p class="muted small auth-links"><a href="/fiyatlar">Paketler ve Pilot Fiyatlandırması →</a></p>
 {% endblock %}
