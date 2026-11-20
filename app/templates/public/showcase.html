@@ -10,12 +10,29 @@
 
 <div class="showcase-grid">
   {% for c in cards %}
+  {% set pname = (c.product.name or '')|lower %}
+  {% if 'kolye' in pname %}
+    {% set img_src = '/static/img/kolye.jpg' %}
+  {% elif 'bilezik' in pname %}
+    {% set img_src = '/static/img/bilezik.jpg' %}
+  {% elif 'harf pano' in pname or 'pano' in pname or 'harf' in pname or 'gul' in pname or 'gül' in pname %}
+    {% set img_src = '/static/img/gul.jpg' %}
+  {% elif 'portre' in pname or '50×70' in pname or '50x70' in pname or 'kurt' in pname %}
+    {% set img_src = '/static/img/kurt.jpg' %}
+  {% else %}
+    {% set img_src = none %}
+  {% endif %}
+
   {# Inline onclick yok (CSP): showcase.js data-modal-id ile modalı açar #}
   <article class="product-card" data-modal-id="modal-{{ loop.index }}" tabindex="0" role="button"
            aria-haspopup="dialog" aria-label="{{ c.product.name }} detayı">
     <div class="product-image">
+      {% if img_src %}
+      <img src="{{ img_src }}" alt="{{ c.product.name }}">
+      {% else %}
       {# Kapak görseli Alper'in PROJE 7'sinden (cover_url) gelecek; o zamana kadar yer tutucu #}
       <div class="placeholder-img">Görsel yakında</div>
+      {% endif %}
     </div>
     <div class="product-info">
       <h3>{{ c.product.name }}</h3>
@@ -28,7 +45,11 @@
       <button type="button" class="close" aria-label="Kapat">&times;</button>
       <div class="modal-body">
         <div class="modal-image">
+          {% if img_src %}
+          <img src="{{ img_src }}" alt="{{ c.product.name }}">
+          {% else %}
           <div class="placeholder-img">Görsel yakında</div>
+          {% endif %}
         </div>
         <div class="modal-text">
           <h2 id="modal-{{ loop.index }}-title">{{ c.product.name }}</h2>
