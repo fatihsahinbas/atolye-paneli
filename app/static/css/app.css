@@ -72,3 +72,14 @@ button.link { background: none; border: none; padding: 0; color: var(--brand); t
 
 @media (max-width: 720px) { .grid2, .grid3 { grid-template-columns: 1fr; } .topbar { flex-wrap: wrap; } }
 .mt { margin-top: 1.4rem; }
+
+/* Paketler ve Fiyatlandırma sayfası (/fiyatlar) */
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; align-items: stretch; }
+.pricing-card { display: flex; flex-direction: column; position: relative; padding: 1.5rem; }
+.pricing-card.popular { border: 2px solid var(--brand); box-shadow: 0 8px 24px rgba(43, 36, 32, 0.08); }
+.pill { position: absolute; top: -12px; right: 16px; background: var(--brand); color: #fff; font-size: .78rem; font-weight: 600; padding: .2rem .7rem; border-radius: 99px; }
+.price-block { margin: .8rem 0; padding: .8rem; background: #f8f3ec; border-radius: 8px; }
+.pilot-price { font-size: 1.75rem; font-weight: 700; color: var(--brand); }
+.limit-box { background: #f3ede6; padding: .5rem .75rem; border-radius: 6px; font-size: .9rem; }
+.plan-features { list-style: none; padding: 0; margin: .8rem 0; display: flex; flex-direction: column; gap: .45rem; flex: 1; }
+.btn.full { width: 100%; text-align: center; }

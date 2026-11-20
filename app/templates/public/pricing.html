@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Paketler ve Fiyatlandırma · Atölye Paneli{% endblock %}
+{% block main_class %}public wide{% endblock %}
+{% block content %}
+<header class="hero">
+  <span class="badge">İlk {{ pilot_months }} ay %{{ pilot_discount }} Pilot İndirimi</span>
+  <h1 class="mt">Atölyenizin hacmine göre şeffaf paketler</h1>
+  <p class="muted">Kuyumcu ve el emeği atölyeleriyle yapılan saha görüşmeleriyle belirlendi. İstediğiniz zaman paket değiştirin.</p>
+</header>
+
+<div class="pricing-grid">
+  {% for p in plans %}
+  <article class="card pricing-card {% if p.is_popular %}popular{% endif %}">
+    {% if p.is_popular %}<div class="pill">En Çok Tercih Edilen</div>{% endif %}
+    <h2>{{ p.name }}</h2>
+    <p class="muted small">{{ p.tagline }}</p>
+
+    <div class="price-block">
+      {% if p.is_paid %}
+      <div class="old-price muted small">Normal: <s>{{ p.monthly_price_tl }} ₺ / ay</s></div>
+      <div class="pilot-price">{{ p.pilot_price_tl() }} ₺ <span class="small muted">/ ay</span></div>
+      <div class="small warn">Pilot atölyelere özel %{{ pilot_discount }} indirimli</div>
+      {% else %}
+      <div class="pilot-price">Ücretsiz</div>
+      <div class="small muted">Kurulum ücreti yok</div>
+      {% endif %}
+    </div>
+
+    <p class="limit-box">
+      <strong>Aylık sipariş sınırı:</strong>
+      {% if p.monthly_order_limit is not none %}{{ p.monthly_order_limit }} sipariş / ay{% else %}Sınırsız sipariş{% endif %}
+    </p>
+
+    <ul class="plan-features">
+      {% for feat in p.features %}
+      <li>✓ {{ feat }}</li>
+      {% endfor %}
+    </ul>
+
+    <div class="mt">
+      <a class="btn {% if p.is_popular %}primary{% endif %} full" href="/kayit">
+        {% if p.is_paid %}Pilot Başvurusu Yap{% else %}Ücretsiz Başla{% endif %}
+      </a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+
+<section class="card mt">
+  <h2>Pilot İndirimi Nasıl İşler?</h2>
+  <p class="muted">
+    Erken dönem pilot atölyelerimize ilk <strong>{{ pilot_months }} ay boyunca %{{ pilot_discount }}</strong> indirim uygulanır.
+    Aylık sipariş sınırınıza yaklaştığınızda panel üzerinden bir üst pakete tek tıkla geçebilirsiniz; mevcut siparişleriniz ve fiyat geçmişiniz korunur.
+  </p>
+</section>
+{% endblock %}
