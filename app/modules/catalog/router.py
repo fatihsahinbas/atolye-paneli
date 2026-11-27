@@ -1,4 +1,5 @@
 from decimal import Decimal, InvalidOperation
+from types import SimpleNamespace
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
@@ -170,7 +171,16 @@ def update_product(
     except (ValidationError, ValueError) as e:
         db.rollback()
         msg = first_error(e) if isinstance(e, ValidationError) else str(e)
-        return _edit_page(request, db, user, product, error=msg)
+        # Kullanıcının girdiği değerler formda kalsın (DB'deki eski hâli değil)
+        submitted = SimpleNamespace(
+            id=product.id, name=name, description=description,
+            pricing_type=SimpleNamespace(value=pricing_type),
+            base_price=base_price, weight_g=weight_g,
+            purity_milyem=int(purity_milyem) if purity_milyem.strip().isdigit() else None,
+            labor_milyem=labor_milyem, extra_cost=extra_cost,
+            is_active=is_active, show_in_showcase=show_in_showcase,
+        )
+        return _edit_page(request, db, user, product, form=submitted, error=msg)
 
     for field, value in data.model_dump().items():
         setattr(product, field, value)

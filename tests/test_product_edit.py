@@ -174,3 +174,24 @@ def test_editing_product_does_not_change_existing_order_item_prices(app):
         assert item is not None
         assert str(item.unit_net) == "1000.00"
         assert str(item.line_net) == "2000.00"
+
+
+def test_invalid_edit_keeps_submitted_values(app):
+    c = make_client(app)
+    register(c, "atolye-v", "owner-v@ornek.com")
+    c.post(
+        "/urunler",
+        data={"csrf_token": csrf(c), "name": "Yüzük", "pricing_type": "FIXED", "base_price": "100"},
+    )
+    r = c.post(
+        "/urunler/1/duzenle",
+        data={
+            "csrf_token": csrf(c, "/urunler/1/duzenle"),
+            "name": "Yeni Ad",
+            "pricing_type": "FIXED",
+            "base_price": "abc",
+        },
+    )
+    assert r.status_code == 200
+    assert 'value="Yeni Ad"' in r.text
+    assert 'class="alert"' in r.text

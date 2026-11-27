@@ -1,58 +1,59 @@
 {% extends "base.html" %}
 {% block content %}
+{% set f = form or product %}
 <h1>Ürün düzenle: {{ product.name }}</h1>
 
 <form method="post" action="/urunler/{{ product.id }}/duzenle" class="card stack">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <div class="grid2">
     <label>Ad
-      <input name="name" required maxlength="120" value="{{ product.name }}">
+      <input name="name" required maxlength="120" value="{{ f.name }}">
     </label>
     <label>Fiyat tipi
       <select name="pricing_type">
-        <option value="FIXED" {{ 'selected' if product.pricing_type.value == 'FIXED' else '' }}>Sabit fiyat</option>
-        <option value="GOLD" {{ 'selected' if product.pricing_type.value == 'GOLD' else '' }}>Altın (gram × milyem)</option>
+        <option value="FIXED" {{ 'selected' if f.pricing_type.value == 'FIXED' else '' }}>Sabit fiyat</option>
+        <option value="GOLD" {{ 'selected' if f.pricing_type.value == 'GOLD' else '' }}>Altın (gram × milyem)</option>
       </select>
     </label>
   </div>
   <label>Açıklama
-    <textarea name="description" rows="2" maxlength="2000">{{ product.description or '' }}</textarea>
+    <textarea name="description" rows="2" maxlength="2000">{{ f.description or '' }}</textarea>
   </label>
   <fieldset>
     <legend>Sabit fiyat</legend>
     <label>Fiyat (KDV hariç, TL)
-      <input name="base_price" inputmode="decimal" value="{{ product.base_price if product.base_price is not none else '' }}">
+      <input name="base_price" inputmode="decimal" value="{{ f.base_price if f.base_price is not none else '' }}">
     </label>
   </fieldset>
   <fieldset>
     <legend>Altın</legend>
     <div class="grid3">
       <label>Gram
-        <input name="weight_g" inputmode="decimal" value="{{ product.weight_g if product.weight_g is not none else '' }}">
+        <input name="weight_g" inputmode="decimal" value="{{ f.weight_g if f.weight_g is not none else '' }}">
       </label>
       <label>Ayar (milyem)
         <select name="purity_milyem">
           <option value="">—</option>
           {% for k, v in purities.items() %}
-          <option value="{{ v }}" {{ 'selected' if product.purity_milyem == v else '' }}>{{ k }} ({{ v }})</option>
+          <option value="{{ v }}" {{ 'selected' if f.purity_milyem == v else '' }}>{{ k }} ({{ v }})</option>
           {% endfor %}
         </select>
       </label>
       <label>İşçilik (milyem)
-        <input name="labor_milyem" type="number" min="0" max="500" value="{{ product.labor_milyem if product.labor_milyem is not none else '' }}">
+        <input name="labor_milyem" type="number" min="0" max="500" value="{{ f.labor_milyem if f.labor_milyem is not none else '' }}">
       </label>
     </div>
   </fieldset>
   <div class="grid2">
     <label>Ek maliyet (taş, kutu…)
-      <input name="extra_cost" inputmode="decimal" value="{{ product.extra_cost }}">
+      <input name="extra_cost" inputmode="decimal" value="{{ f.extra_cost }}">
     </label>
     <div class="stack">
       <label class="check">
-        <input type="checkbox" name="is_active" value="true" {{ 'checked' if product.is_active else '' }}> Aktif (pasife almak için işareti kaldırın)
+        <input type="checkbox" name="is_active" value="true" {{ 'checked' if f.is_active else '' }}> Aktif (pasife almak için işareti kaldırın)
       </label>
       <label class="check">
-        <input type="checkbox" name="show_in_showcase" value="true" {{ 'checked' if product.show_in_showcase else '' }}> Vitrinde göster
+        <input type="checkbox" name="show_in_showcase" value="true" {{ 'checked' if f.show_in_showcase else '' }}> Vitrinde göster
       </label>
     </div>
   </div>
