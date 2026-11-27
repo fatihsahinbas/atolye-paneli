@@ -27,3 +27,5 @@ class Product(TenantMixin, TimestampMixin, Base):
     extra_cost: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal(0))
     is_active: Mapped[bool] = mapped_column(default=True)
     show_in_showcase: Mapped[bool] = mapped_column(default=True)
+    # Ortalama üretim süresi (iş günü). Sipariş formunda termin önerisi buradan (Çınar H4)
+    avg_production_days: Mapped[int | None]

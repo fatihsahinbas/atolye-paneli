@@ -30,6 +30,7 @@ class ProductIn(BaseModel):
     purity_milyem: int | None = Field(default=None, gt=0, le=1000)
     labor_milyem: int | None = Field(default=None, ge=0, le=500)
     extra_cost: Decimal = Field(default=Decimal(0), ge=0, le=Decimal("10000000"))
+    avg_production_days: int | None = Field(default=None, ge=1, le=365)
     is_active: bool = True
     show_in_showcase: bool = True
 
@@ -99,6 +100,7 @@ def create_product(
     purity_milyem: str = Form(""),
     labor_milyem: str = Form(""),
     extra_cost: str = Form("0"),
+    avg_production_days: str = Form(""),
     show_in_showcase: bool = Form(False),
 ):
     try:
@@ -111,6 +113,7 @@ def create_product(
             purity_milyem=_int_or_none(purity_milyem),
             labor_milyem=_int_or_none(labor_milyem),
             extra_cost=_dec(extra_cost) or Decimal(0),
+            avg_production_days=_int_or_none(avg_production_days),
             is_active=True,
             show_in_showcase=show_in_showcase,
         )
@@ -149,6 +152,7 @@ def update_product(
     purity_milyem: str = Form(""),
     labor_milyem: str = Form(""),
     extra_cost: str = Form("0"),
+    avg_production_days: str = Form(""),
     is_active: bool = Form(False),
     show_in_showcase: bool = Form(False),
 ):
@@ -165,6 +169,7 @@ def update_product(
             purity_milyem=_int_or_none(purity_milyem),
             labor_milyem=_int_or_none(labor_milyem),
             extra_cost=_dec(extra_cost) or Decimal(0),
+            avg_production_days=_int_or_none(avg_production_days),
             is_active=is_active,
             show_in_showcase=show_in_showcase,
         )
@@ -177,7 +182,7 @@ def update_product(
             pricing_type=SimpleNamespace(value=pricing_type),
             base_price=base_price, weight_g=weight_g,
             purity_milyem=int(purity_milyem) if purity_milyem.strip().isdigit() else None,
-            labor_milyem=labor_milyem, extra_cost=extra_cost,
+            labor_milyem=labor_milyem, extra_cost=extra_cost, avg_production_days=avg_production_days,
             is_active=is_active, show_in_showcase=show_in_showcase,
         )
         return _edit_page(request, db, user, product, form=submitted, error=msg)
