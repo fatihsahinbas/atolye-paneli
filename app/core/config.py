@@ -40,6 +40,18 @@ class Settings(BaseSettings):
     smtp_password: str = Field(default="", repr=False)
     smtp_starttls: bool = True
 
+    # Abonelik ödemesi (Hasan H4): fake | iyzico | paytr. Canlı ödeme kilidi: PAYMENT_LIVE=false
+    payment_provider: str = "fake"
+    payment_live: bool = False
+    iyzico_api_key: str = Field(default="", repr=False)
+    iyzico_secret_key: str = Field(default="", repr=False)
+    iyzico_base_url: str = "https://sandbox-api.iyzipay.com"
+    paytr_merchant_id: str = ""
+    paytr_merchant_key: str = Field(default="", repr=False)
+    paytr_merchant_salt: str = Field(default="", repr=False)
+    paytr_test_mode: int = 1
+    public_base_url: str = ""  # ödeme dönüş adresleri için (ör. https://panel.ornek.com); boşsa istekten
+
     login_rate_limit: int = 5
     login_rate_window_sec: int = 900
 

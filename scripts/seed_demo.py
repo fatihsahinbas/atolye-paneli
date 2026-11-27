@@ -29,7 +29,8 @@ def main() -> None:
         print("Demo zaten var.")
         return
     ws = Workshop(name="Işık Kuyumculuk & Filografi", slug="demo-atolye",
-                  gold_price_per_gram=Decimal("3000"), gold_price_updated_at=utcnow())
+                  gold_price_per_gram=Decimal("3000"), gold_price_updated_at=utcnow(),
+                  phone="+905321112233", subscription_ends_at=utcnow() + timedelta(days=14))
     db.add(ws)
     db.flush()
     user = User(workshop_id=ws.id, email="demo@atolye.local", full_name="Demo Usta",
@@ -38,12 +39,12 @@ def main() -> None:
     db.add_all([
         Product(workshop_id=ws.id, name="22 Ayar Burgu Bilezik", pricing_type=PricingType.GOLD,
                 weight_g=Decimal("12"), purity_milyem=916, labor_milyem=25,
-                description="El işçiliği, kişiye özel ölçü"),
+                description="El işçiliği, kişiye özel ölçü", avg_production_days=5),
         Product(workshop_id=ws.id, name="14 Ayar İsimli Kolye", pricing_type=PricingType.GOLD,
                 weight_g=Decimal("3.2"), purity_milyem=585, labor_milyem=120, extra_cost=Decimal("250"),
-                description="İstediğiniz isim, el yazısı font"),
+                description="İstediğiniz isim, el yazısı font", avg_production_days=3),
         Product(workshop_id=ws.id, name="Filografi Portre 50×70", pricing_type=PricingType.FIXED,
-                base_price=Decimal("2500"), description="Fotoğraftan çivi-ip portre"),
+                base_price=Decimal("2500"), description="Fotoğraftan çivi-ip portre", avg_production_days=7),
         Product(workshop_id=ws.id, name="Filografi Harf Pano", pricing_type=PricingType.FIXED,
                 base_price=Decimal("900"), description="Baş harf, renk seçimli"),
     ])

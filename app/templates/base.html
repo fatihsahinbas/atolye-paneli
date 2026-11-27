@@ -19,7 +19,7 @@
       <a href="/">Pano</a>
       <a href="/siparisler/yeni">Yeni sipariş</a>
       <a href="/musteriler">Müşteriler</a>
-      {% if user.role.value == "OWNER" %}<a href="/personel">Personel</a><a href="/atolye/ayarlar">Atölye ayarları</a>{% endif %}
+      {% if user.role.value == "OWNER" %}<a href="/personel">Personel</a><a href="/atolye/ayarlar">Atölye ayarları</a><a href="/abonelik">Abonelik</a>{% endif %}
       <a href="/urunler">Ürünler</a>
       <a href="/v/{{ user.workshop.slug }}" target="_blank" rel="noopener">Vitrin ↗</a>
     </nav>
@@ -31,6 +31,10 @@
       </form>
     </div>
   </header>
+  {% endif %}
+  {% if sub_expired %}
+  <div class="sub-banner">Deneme / abonelik süreniz doldu.
+    {% if user.role.value == "OWNER" %}<a href="/abonelik">Abonelik sayfası</a>{% endif %}</div>
   {% endif %}
   <main class="{% block main_class %}container{% endblock %}">
     {% if error %}<div class="alert">{{ error }}</div>{% endif %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Abonelik</h1>
+{% if result %}<div class="{{ 'notice-ok' if request.query_params.get('sonuc') == 'ok' else 'alert' }}">{{ result }}</div>{% endif %}
+
+<section class="card stack">
+  {% if workshop.is_pilot %}
+  <p><span class="badge">Pilot programı: ücretsiz</span></p>
+  <p class="muted">Pilot programındaki atölyeler demo gününe kadar ödeme yapmaz.</p>
+  {% else %}
+  <p>Paket: <strong>{{ current_plan.name if current_plan else 'Deneme süresi' }}</strong></p>
+  <p>Bitiş: <strong>{{ ends_at|yerel('%d.%m.%Y') if ends_at else '—' }}</strong>
+    {% if not active %}<span class="badge status-failed">süresi doldu</span>{% endif %}</p>
+  {% endif %}
+</section>
+
+{% if not workshop.is_pilot %}
+<form method="post" action="/abonelik/baslat" class="card stack">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <h2>Paket seç ve öde</h2>
+  {% for p in plans %}
+  <label class="check">
+    <input type="radio" name="plan_code" value="{{ p.code }}" {{ 'checked' if loop.first else '' }}>
+    <strong>{{ p.name }}</strong> · {{ p.monthly_price|tl }} / ay
+    <span class="muted small">({% if p.max_orders_per_month %}{{ p.max_orders_per_month }} sipariş/ay{% else %}sınırsız sipariş{% endif %})</span>
+  </label>
+  {% endfor %}
+  <p class="muted small">Ödeme {{ 'test ortamında' if provider != 'fake' else 'demo modunda' }} alınır; gerçek para çekilmez.
+    Kart bilgileriniz bize gelmez, ödeme sağlayıcının sayfasında girilir.</p>
+  <button class="primary">Öde (1 ay)</button>
+</form>
+{% endif %}
+
+<section class="card">
+  <h2>Son ödemeler</h2>
+  <table class="tbl">
+    <tr><th>Tarih</th><th>Paket</th><th>Tutar</th><th>Sağlayıcı</th><th>Durum</th><th></th></tr>
+    {% for p in payments %}
+    <tr>
+      <td>{{ p.created_at|yerel }}</td><td>{{ p.plan_code }}</td><td>{{ p.amount|tl }}</td><td>{{ p.provider }}</td>
+      <td><span class="badge status-{{ p.status.value|lower }}">{{ p.status.value }}</span></td>
+      <td class="r">
+        {% if p.status.value == "PENDING" and p.provider == "iyzico" %}
+        <form method="post" action="/abonelik/kontrol/{{ p.id }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="link small">Durumu kontrol et</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="6" class="muted">Henüz ödeme yok.</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}
