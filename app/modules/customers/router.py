@@ -61,6 +61,7 @@ def create_customer(
     email: str = Form(""),
     notes: str = Form(""),
     consent: bool = Form(False),
+    marketing: bool = Form(False),
 ):
     try:
         data = CustomerIn(full_name=full_name.strip(), phone=phone or None, email=email or None, notes=notes or None)
@@ -71,6 +72,7 @@ def create_customer(
             workshop_id=user.workshop_id,
             **data.model_dump(),
             contact_consent_at=utcnow() if consent else None,
+            marketing_consent_at=utcnow() if marketing else None,
         )
     )
     db.commit()
@@ -85,6 +87,47 @@ def anonymize_customer(
     c = get_owned(db, Customer, customer_id, user)
     c.full_name = f"Silinmiş Müşteri #{c.id}"
     c.phone = c.email = c.notes = None
-    c.contact_consent_at = None
+    c.contact_consent_at = c.marketing_consent_at = None
+    db.commit()
+    return RedirectResponse("/musteriler", status_code=303)
+
+
+def _consent(current, given: bool):
+    """İzin verildiyse ilk zaman damgası korunur; geri alınırsa None."""
+    if not given:
+        return None
+    return current or utcnow()
+
+
+@router.get("/{customer_id}/duzenle")
+def edit_customer_form(
+    request: Request, customer_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)
+):
+    c = get_owned(db, Customer, customer_id, user)
+    return render(request, "customers/edit.html", {"c": c})
+
+
+@router.post("/{customer_id}/duzenle", dependencies=[Depends(csrf_protect)])
+def update_customer(
+    request: Request,
+    customer_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+    full_name: str = Form(""),
+    phone: str = Form(""),
+    email: str = Form(""),
+    notes: str = Form(""),
+    consent: bool = Form(False),
+    marketing: bool = Form(False),
+):
+    c = get_owned(db, Customer, customer_id, user)
+    try:
+        data = CustomerIn(full_name=full_name.strip(), phone=phone or None, email=email or None, notes=notes or None)
+    except ValidationError as e:
+        return render(request, "customers/edit.html", {"c": c, "error": first_error(e)})
+    for k, v in data.model_dump().items():
+        setattr(c, k, v)
+    c.contact_consent_at = _consent(c.contact_consent_at, consent)
+    c.marketing_consent_at = _consent(c.marketing_consent_at, marketing)
     db.commit()
     return RedirectResponse("/musteriler", status_code=303)

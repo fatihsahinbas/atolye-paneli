@@ -266,3 +266,4 @@ button.link { background: none; border: none; padding: 0; color: var(--brand); t
 #board-message:not(.alert-error) { background: var(--ok-bg); color: var(--ok); border-color: var(--ok); }
 .row-between { display: flex; justify-content: space-between; gap: 1rem; }
 .order-item { border-bottom: 1px solid var(--line); padding-bottom: .6rem; margin-bottom: .6rem; }
+.legal h2 { font-size: 1.05rem; margin-top: .8rem; } .showcase-legal { text-align: center; margin-top: 2rem; }

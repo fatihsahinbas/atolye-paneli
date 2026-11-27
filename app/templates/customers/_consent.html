@@ -1,0 +1,7 @@
+<fieldset class="stack">
+  <legend>İzinler (<a href="/kvkk" target="_blank" rel="noopener">KVKK aydınlatma metni</a>)</legend>
+  <label class="check"><input type="checkbox" name="consent" value="true" {{ 'checked' if c and c.contact_consent_at else '' }}>
+    Sipariş durumu bildirimi: müşteri, siparişinin aşamaları hakkında SMS / WhatsApp / e-posta almayı kabul etti</label>
+  <label class="check"><input type="checkbox" name="marketing" value="true" {{ 'checked' if c and c.marketing_consent_at else '' }}>
+    Kampanya mesajı: müşteri, yeni ürün ve kampanya mesajı almayı kabul etti (isteğe bağlı)</label>
+</fieldset>
