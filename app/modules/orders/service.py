@@ -50,6 +50,8 @@ def create_order(
     total_net = total_gross = Decimal(0)
     for it in items:
         product = get_owned(db, Product, it.product_id, user)
+        if not product.is_active:
+            raise ValueError(f"Pasif ürün siparişe eklenemez: {product.name}")
         unit = quote(product, workshop, 1)
         line = unit.times(it.quantity)
         order.items.append(

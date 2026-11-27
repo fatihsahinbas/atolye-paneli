@@ -1,0 +1,17 @@
+{% if error %}
+    <div class="alert">
+        {{ error }}
+    </div>
+{% else %}
+    <div class="price-box">
+        <div class="row-between">
+            <span>Ara toplam (KDV hariç)</span>
+            <strong>{{ total_net|tl }}</strong>
+        </div>
+
+        <div class="row-between">
+            <span>Genel toplam (KDV dahil)</span>
+            <strong>{{ total_gross|tl }}</strong>
+        </div>
+    </div>
+{% endif %}

@@ -1,0 +1,39 @@
+<div class="grid2 order-item" data-order-item>
+    <label>Ürün
+        <select name="product_id" required>
+            {% for p in products %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <label>Adet
+        <input
+            type="number"
+            name="quantity"
+            value="1"
+            min="1"
+            max="1000"
+            required
+        >
+    </label>
+
+    <label>Kişiselleştirme / açıklama
+        <input
+            type="text"
+            name="description"
+            maxlength="200"
+            placeholder="Örn. İsim veya özel tasarım"
+        >
+    </label>
+
+    <button
+        type="button"
+        class="danger"
+        hx-post="/siparisler/kalem/sil"
+        hx-target="closest [data-order-item]"
+        hx-swap="delete"
+    >
+        Kalemi sil
+    </button>
+</div>

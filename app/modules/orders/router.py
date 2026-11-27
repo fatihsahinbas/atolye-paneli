@@ -1,7 +1,8 @@
 from datetime import date
+from decimal import Decimal
 
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -13,14 +14,18 @@ from app.domain.order_status import BOARD_ORDER, InvalidTransition, OrderStatus,
 from app.domain.pricing import PricingError
 from app.modules.auth.models import User
 from app.modules.catalog.models import Product
+from app.modules.catalog.service import quote
 from app.modules.customers.models import Customer
 from app.modules.media.models import Media
 from app.modules.media.service import UploadError, media_response, save_image
 from app.modules.notifications.service import notify_status_change
 from app.modules.orders.models import Order
 from app.modules.orders.service import NewItem, change_status, create_order
+from app.modules.workshop.models import Workshop
 
 router = APIRouter(tags=["orders"])
+
+MAX_ITEMS = 50
 
 
 @router.get("/")
@@ -35,7 +40,7 @@ def board(request: Request, db: Session = Depends(get_db), user: User = Depends(
 
 def _new_form(request: Request, db: Session, user: User, **extra):
     customers = db.scalars(scoped(Customer, user).order_by(Customer.full_name)).all()
-    products = db.scalars(scoped(Product, user).where(Product.is_active.is_(True)).order_by(Product.name)).all()
+    products = _active_products(db, user)
     return render(request, "orders/new.html", {"customers": customers, "products": products, **extra})
 
 
@@ -44,23 +49,85 @@ def new_order_form(request: Request, db: Session = Depends(get_db), user: User =
     return _new_form(request, db, user)
 
 
+def _active_products(db: Session, user: User):
+    return db.scalars(scoped(Product, user).where(Product.is_active.is_(True)).order_by(Product.name)).all()
+
+
+def _parse_items(product_id: list[int], quantity: list[int], description: list[str]) -> list[NewItem]:
+    """Formdaki paralel listeleri kalemlere çevirir. Hatalıysa ValueError."""
+    if not product_id:
+        raise ValueError("En az bir ürün eklemelisiniz")
+    if len(product_id) != len(quantity):
+        raise ValueError("Ürün ve adet bilgileri eşleşmiyor")
+    if len(product_id) > MAX_ITEMS:
+        raise ValueError(f"En fazla {MAX_ITEMS} kalem eklenebilir")
+    description = description + [""] * (len(product_id) - len(description))
+    items = []
+    for pid, qty, desc in zip(product_id, quantity, description[: len(product_id)], strict=True):
+        if not 1 <= qty <= 1000:
+            raise ValueError("Adet 1 ile 1000 arasında olmalıdır")
+        items.append(NewItem(pid, qty, desc.strip()[:200] or None))
+    return items
+
+
+@router.get("/siparisler/kalem/yeni")
+def new_item_row(request: Request, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    """HTMX: forma yeni kalem satırı."""
+    products = _active_products(db, user)
+    if not products:
+        raise HTTPException(400, "Aktif ürün yok")
+    return render(request, "orders/_item_row.html", {"products": products})
+
+
+@router.post("/siparisler/kalem/sil", dependencies=[Depends(csrf_protect)])
+def remove_item_row():
+    """HTMX: satır istemcide silinir (hx-swap=delete); sunucu yalnızca 200 döner."""
+    return Response(status_code=200)
+
+
+@router.post("/siparisler/fiyat-onizleme", dependencies=[Depends(csrf_protect)])
+def order_price_preview(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+    product_id: list[int] = Form([]),
+    quantity: list[int] = Form([]),
+):
+    """HTMX: kalemlerin toplamı. Hesap create_order ile aynı (quote × adet)."""
+    total_net = total_gross = Decimal(0)
+    error = None
+    try:
+        items = _parse_items(product_id, quantity, [])
+        workshop = db.get(Workshop, user.workshop_id)
+        for it in items:
+            product = get_owned(db, Product, it.product_id, user)
+            if not product.is_active:
+                raise ValueError("Pasif ürün siparişe eklenemez")
+            line = quote(product, workshop, 1).times(it.quantity)
+            total_net += line.net
+            total_gross += line.gross
+    except (PricingError, ValueError) as e:
+        error = str(e)
+    return render(
+        request, "orders/_total.html", {"total_net": total_net, "total_gross": total_gross, "error": error}
+    )
+
+
 @router.post("/siparisler", dependencies=[Depends(csrf_protect)])
 def create_order_view(
     request: Request,
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
     customer_id: int = Form(...),
-    product_id: int = Form(...),
-    quantity: int = Form(1, ge=1, le=1000),
-    description: str = Form("", max_length=200),
+    product_id: list[int] = Form([]),
+    quantity: list[int] = Form([]),
+    description: list[str] = Form([]),
     due_date: date | None = Form(None),
     note: str = Form("", max_length=2000),
 ):
     try:
-        order = create_order(
-            db, user, customer_id, [NewItem(product_id, quantity, description.strip() or None)],
-            due_date, note.strip() or None,
-        )
+        items = _parse_items(product_id, quantity, description)
+        order = create_order(db, user, customer_id, items, due_date, note.strip() or None)
     except (PricingError, ValueError) as e:
         db.rollback()
         return _new_form(request, db, user, error=str(e))
@@ -95,6 +162,24 @@ def order_status(
         return RedirectResponse(f"/siparisler/{order.id}", status_code=303)
     notify_status_change(db, order, request.app.state.notifier, str(request.base_url))
     return RedirectResponse(f"/siparisler/{order.id}", status_code=303)
+
+
+@router.post("/siparisler/{order_id}/tasi", dependencies=[Depends(csrf_protect)])
+def order_move(
+    request: Request,
+    order_id: int,
+    to_status: OrderStatus = Form(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    """Panoda sürükle-bırak. Karar sunucuda: geçersiz geçiş → 409, kart eski yerine döner."""
+    order = get_owned(db, Order, order_id, user)
+    try:
+        change_status(db, user, order, to_status, None)
+    except InvalidTransition:
+        return JSONResponse({"ok": False, "message": "Bu durum geçişine izin verilmiyor"}, status_code=409)
+    notify_status_change(db, order, request.app.state.notifier, str(request.base_url))
+    return JSONResponse({"ok": True, "status": order.status.value})
 
 
 @router.post("/siparisler/{order_id}/medya", dependencies=[Depends(csrf_protect)])
