@@ -1,5 +1,5 @@
 """Ürün görselleri: yükle, kapak seç, sil.  Sahip: Alper (H3 PROJE 7)"""
-from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -76,7 +76,7 @@ async def upload_product_images(
 def make_cover(media_id: int, db: Session = Depends(get_db), user: User = Depends(require_owner)):
     m = get_owned(db, Media, media_id, user)
     if m.product_id is None:
-        return RedirectResponse("/urunler", status_code=303)
+        raise HTTPException(404)
     _set_cover(db, m)
     db.commit()
     return RedirectResponse(f"/urunler/{m.product_id}/duzenle", status_code=303)
@@ -85,6 +85,8 @@ def make_cover(media_id: int, db: Session = Depends(get_db), user: User = Depend
 @router.post("/gorsel/{media_id}/sil", dependencies=[Depends(csrf_protect)])
 def delete_image(request: Request, media_id: int, db: Session = Depends(get_db), user: User = Depends(require_owner)):
     m = get_owned(db, Media, media_id, user)
+    if m.product_id is None:  # sipariş fotoğrafları bu uçtan silinmez
+        raise HTTPException(404)
     product_id, stored, was_cover = m.product_id, m.stored_name, m.is_cover
     db.delete(m)
     db.commit()  # önce DB, sonra dosyalar

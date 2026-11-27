@@ -10,7 +10,7 @@
       <td>{{ '✓' if c.contact_consent_at else '—' }}</td>
       <td>{{ '✓' if c.marketing_consent_at else '—' }}</td>
       <td class="r">
-        <a class="small" href="/musteriler/{{ c.id }}/duzenle">Düzenle</a>
+        {% if not c.is_anonymized %}<a class="small" href="/musteriler/{{ c.id }}/duzenle">Düzenle</a>{% endif %}
         {% if user.role == "OWNER" and (c.phone or c.email) %}
         <form method="post" action="/musteriler/{{ c.id }}/anonimlestir" class="inline">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

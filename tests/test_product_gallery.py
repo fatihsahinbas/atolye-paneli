@@ -58,6 +58,8 @@ def test_other_workshop_cannot_cover_or_delete(app):
     assert b.post(f"/gorsel/{mid}/kapak", data={"csrf_token": csrf(b)}).status_code == 404
     assert b.post(f"/gorsel/{mid}/sil", data={"csrf_token": csrf(b)}).status_code == 404
     assert _upload(b, 1).status_code == 404
+    imgs = _images(app)
+    assert len(imgs) == 1 and imgs[0].is_cover  # A'nın görseli yerinde
 
 
 def test_showcase_shows_cover_and_hides_inactive(app):

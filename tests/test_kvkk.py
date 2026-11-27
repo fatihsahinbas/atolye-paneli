@@ -58,3 +58,27 @@ def test_other_workshop_cannot_edit_customer(app):
     assert b.get("/musteriler/1/duzenle").status_code == 404
     r = b.post("/musteriler/1/duzenle", data={"csrf_token": csrf(b), "full_name": "Hack"})
     assert r.status_code == 404
+
+
+def test_anonymize_clears_notification_history_and_blocks_edit(app):
+    from app.modules.notifications.models import Notification
+
+    c = make_client(app)
+    register(c, "atolye-a", "a@ornek.com")
+    oid = seed_order(c, consent=True)
+    c.post(f"/siparisler/{oid}/durum", data={"csrf_token": csrf(c), "to_status": "IN_PRODUCTION"})
+    with app.state.SessionLocal() as db:
+        cid = db.query(Customer).one().id
+        assert db.query(Notification).one().recipient
+    edit_token = csrf(c, f"/musteriler/{cid}/duzenle")
+    c.post(f"/musteriler/{cid}/anonimlestir", data={"csrf_token": csrf(c)})
+    with app.state.SessionLocal() as db:
+        n = db.query(Notification).one()
+        assert n.recipient is None and "Mehmet" not in n.message
+    # Silmeden önce açılmış form veriyi geri yazamaz
+    r = c.post(f"/musteriler/{cid}/duzenle", data={"csrf_token": edit_token, "full_name": "Mehmet Yılmaz",
+                                                   "phone": "0532 111 22 33", "consent": "true"})
+    assert r.status_code == 303
+    with app.state.SessionLocal() as db:
+        cu = db.get(Customer, cid)
+        assert cu.phone is None and cu.contact_consent_at is None

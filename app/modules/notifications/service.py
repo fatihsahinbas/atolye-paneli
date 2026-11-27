@@ -7,6 +7,7 @@ Hangi kanalın kullanılacağına build_notifier() karar verir (NOTIFY_CHANNEL);
 """
 import logging
 import smtplib
+import ssl
 from collections.abc import Callable
 from email.message import EmailMessage
 from typing import Protocol
@@ -81,7 +82,7 @@ class EmailNotifier:
         msg.set_content(message)
         with self._factory(self._host, self._port, timeout=10) as smtp:
             if self._starttls:
-                smtp.starttls()
+                smtp.starttls(context=ssl.create_default_context())  # sertifika doğrulanır
             if self._user:
                 smtp.login(self._user, self._password)
             smtp.send_message(msg)
@@ -227,6 +228,12 @@ def notify_status_change(
 def resend(db: Session, n: Notification, notifier: Notifier, email_notifier: Notifier | None) -> Notification:
     """Yalnızca FAILED kayıt tekrar gönderilir; sonuç aynı kayda yazılır (SENT bir kayıt iki kez gitmez)."""
     if n.status != NotificationStatus.FAILED or not n.recipient:
+        return n
+    order = db.get(Order, n.order_id) if n.order_id else None
+    customer = order.customer if order else None
+    if customer is None or not customer.contact_consent_at or n.recipient not in (customer.phone, customer.email):
+        n.status = NotificationStatus.SKIPPED  # rıza geri alındı ya da iletişim bilgisi değişti
+        db.commit()
         return n
     chosen = email_notifier if (email_notifier and n.channel == email_notifier.channel) else notifier
     _send(n, chosen, n.order_id)

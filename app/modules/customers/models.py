@@ -7,6 +7,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.core.db import Base, TenantMixin, TimestampMixin
 
 
+def anonymized_name(customer_id: int) -> str:
+    return f"Silinmiş Müşteri #{customer_id}"
+
+
 class Customer(TenantMixin, TimestampMixin, Base):
     __tablename__ = "customers"
 
@@ -19,6 +23,10 @@ class Customer(TenantMixin, TimestampMixin, Base):
     contact_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Kampanya mesajı izni (pazarlama). Bildirim izninden ayrıdır, varsayılan kapalı (KVKK, Hasan H3)
     marketing_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    @property
+    def is_anonymized(self) -> bool:
+        return self.full_name == anonymized_name(self.id)
 
     @property
     def first_name(self) -> str:
