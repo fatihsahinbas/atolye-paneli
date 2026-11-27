@@ -37,6 +37,10 @@ def yerel(dt: datetime | None, fmt: str = "%d.%m.%Y %H:%M") -> str:
 templates.env.filters["tl"] = tl
 templates.env.filters["yerel"] = yerel
 templates.env.globals["STATUS_LABELS"] = LABELS
+templates.env.globals["NOTIFY_LABELS"] = {
+    "PENDING": "Bekliyor", "SENT": "Gönderildi", "FAILED": "Gönderilemedi",
+    "SKIPPED": "Gönderilmedi (izin/iletişim yok)",
+}
 
 
 def render(request: Request, name: str, ctx: dict[str, Any] | None = None, status_code: int = 200):

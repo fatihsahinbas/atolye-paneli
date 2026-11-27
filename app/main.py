@@ -19,7 +19,8 @@ from app.modules.auth.staff import router as staff_router
 from app.modules.catalog.router import router as catalog_router
 from app.modules.customers.router import router as customers_router
 from app.modules.legal.router import router as legal_router
-from app.modules.notifications.service import Notifier, build_notifier
+from app.modules.notifications.router import router as notifications_router
+from app.modules.notifications.service import Notifier, build_email_notifier, build_notifier
 from app.modules.orders.router import router as orders_router
 from app.modules.payments.router import router as payments_router
 from app.modules.showcase.router import router as showcase_router
@@ -34,7 +35,9 @@ CSP = (
 )
 
 
-def create_app(settings: Settings | None = None, notifier: Notifier | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None, notifier: Notifier | None = None, email_notifier: Notifier | None = None
+) -> FastAPI:
     settings = settings or get_settings()
     setup_logging()
 
@@ -60,6 +63,7 @@ def create_app(settings: Settings | None = None, notifier: Notifier | None = Non
     app.state.reset_mail_outbox = []  # only for automated tests
     # Somut sınıf burada seçilmez; kanal .env'deki NOTIFY_CHANNEL'dan gelir.
     app.state.notifier = notifier or build_notifier(settings)
+    app.state.email_notifier = email_notifier or build_email_notifier(settings)  # telefonu olmayan müşteri
     Path(settings.media_root).mkdir(parents=True, exist_ok=True)
 
     # --- Middleware -------------------------------------------------------
@@ -106,7 +110,8 @@ def create_app(settings: Settings | None = None, notifier: Notifier | None = Non
     # --- Router'lar ---------------------------------------------------------
     app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
     for r in (auth_router, staff_router, orders_router, customers_router, catalog_router,
-              tracking_router, showcase_router, payments_router, workshop_router, legal_router):
+              tracking_router, showcase_router, payments_router, workshop_router, legal_router,
+              notifications_router):
         app.include_router(r)
 
     @app.get("/healthz", include_in_schema=False)

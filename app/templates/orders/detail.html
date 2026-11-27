@@ -60,4 +60,26 @@
     <button>Yükle</button>
   </form>
 </div>
+<div class="card">
+  <h2>Gönderilen bildirimler</h2>
+  <table class="tbl">
+    <tr><th>Zaman</th><th>Kanal</th><th>Alıcı</th><th>Durum</th><th></th></tr>
+    {% for n in notifications %}
+    <tr>
+      <td>{{ n.created_at|yerel }}</td>
+      <td>{{ n.channel }}</td>
+      <td>{{ n.recipient or '—' }}</td>
+      <td><span class="badge status-{{ n.status.value|lower }}">{{ NOTIFY_LABELS[n.status] }}</span></td>
+      <td class="r">
+        {% if n.status.value == "FAILED" %}
+        <form method="post" action="/bildirimler/{{ n.id }}/tekrar" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="link small">Tekrar gönder</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="5" class="muted">Henüz bildirim yok.</td></tr>{% endfor %}
+  </table>
+</div>
 {% endblock %}
