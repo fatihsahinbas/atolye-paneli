@@ -1,10 +1,14 @@
 """Bildirim gönderimi.  Sahip: Deha
 
 Yeni kanal eklemek = Notifier protokolünü uygulayan bir sınıf yazmak (WhatsApp, SMS, e-posta).
+Kanal seçimi: müşterinin telefonu varsa telefon kanalı (NOTIFY_CHANNEL), yoksa e-posta, ikisi de yoksa SKIPPED.
 Sipariş modülü kanalı bilmez; yalnızca notify_status_change() çağırır.
 Hangi kanalın kullanılacağına build_notifier() karar verir (NOTIFY_CHANNEL); main.py somut sınıfı bilmez.
 """
 import logging
+import smtplib
+from collections.abc import Callable
+from email.message import EmailMessage
 from typing import Protocol
 
 import httpx
@@ -36,6 +40,51 @@ class ConsoleNotifier:
     def send(self, recipient: str, message: str) -> None:
         self.sent.append((recipient, message))
         log.info("Bildirim → %s: %s", recipient, message)
+
+
+class ConsoleEmailNotifier(ConsoleNotifier):
+    """SMTP ayarı yokken e-posta kanalı: log'a yazar (adres maskelenir)."""
+
+    channel = "email"
+
+
+class EmailNotifier:
+    """SMTP ile e-posta. Test için smtp_factory dışarıdan verilir."""
+
+    channel = "email"
+
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        user: str,
+        password: str,
+        sender: str,
+        starttls: bool = True,
+        subject: str = "Sipariş durumu",
+        smtp_factory: Callable[..., smtplib.SMTP] = smtplib.SMTP,
+    ) -> None:
+        if not host or not sender:
+            raise ValueError("email: SMTP_HOST ve SMTP_FROM zorunludur")
+        self._host, self._port, self._user, self._password = host, port, user, password
+        self._sender, self._starttls, self._subject = sender, starttls, subject
+        self._factory = smtp_factory
+
+    def __repr__(self) -> str:
+        return f"EmailNotifier(host={self._host!r}, user={self._user!r}, password='***')"
+
+    def send(self, recipient: str, message: str) -> None:
+        msg = EmailMessage()
+        msg["Subject"] = self._subject
+        msg["From"] = self._sender
+        msg["To"] = recipient
+        msg.set_content(message)
+        with self._factory(self._host, self._port, timeout=10) as smtp:
+            if self._starttls:
+                smtp.starttls()
+            if self._user:
+                smtp.login(self._user, self._password)
+            smtp.send_message(msg)
 
 
 # --- HTTP tabanlı adaptörler (SMS / WhatsApp) ------------------------------
@@ -121,6 +170,16 @@ def build_notifier(settings: Settings) -> Notifier:
     raise ValueError(f"Bilinmeyen NOTIFY_CHANNEL: {channel!r}")
 
 
+def build_email_notifier(settings: Settings) -> Notifier:
+    """SMTP ayarlıysa gerçek e-posta, değilse log'a yazan e-posta kanalı."""
+    if settings.smtp_host and settings.smtp_from:
+        return EmailNotifier(
+            settings.smtp_host, settings.smtp_port, settings.smtp_user, settings.smtp_password,
+            settings.smtp_from, settings.smtp_starttls, subject=f"{settings.app_name} · Sipariş durumu",
+        )
+    return ConsoleEmailNotifier()
+
+
 # --- İş akışı ----------------------------------------------------------------
 
 
@@ -131,27 +190,45 @@ def build_message(order: Order, base_url: str) -> str:
     )
 
 
-def notify_status_change(db: Session, order: Order, notifier: Notifier, base_url: str) -> Notification:
+def _send(n: Notification, notifier: Notifier, order_id: int | None) -> None:
+    try:
+        notifier.send(n.recipient, n.message)
+        n.status, n.sent_at = NotificationStatus.SENT, utcnow()
+    except Exception as exc:  # kanal hatası siparişi bozmasın
+        # Hata mesajı log'a basılmaz (URL/anahtar/adres sızmasın); yalnızca tip + kanal. Detay DEBUG'da.
+        log.warning("Bildirim gönderilemedi (order=%s kanal=%s hata=%s)", order_id, n.channel, type(exc).__name__)
+        log.debug("Bildirim hata detayı", exc_info=True)
+        n.status = NotificationStatus.FAILED
+
+
+def notify_status_change(
+    db: Session, order: Order, notifier: Notifier, base_url: str, email_notifier: Notifier | None = None
+) -> Notification:
+    """Telefon varsa telefon kanalı, yoksa e-posta, ikisi de yoksa ya da rıza yoksa SKIPPED."""
     customer = order.customer
+    use_email = not customer.phone and bool(customer.email) and email_notifier is not None
+    chosen = email_notifier if use_email else notifier
     n = Notification(
         workshop_id=order.workshop_id,
         order_id=order.id,
-        channel=notifier.channel,
-        recipient=customer.phone,
+        channel=chosen.channel,
+        recipient=customer.email if use_email else customer.phone,
         message=build_message(order, base_url),
     )
     db.add(n)
-    if not customer.contact_consent_at or not customer.phone:
+    if not customer.contact_consent_at or not n.recipient:
         n.status = NotificationStatus.SKIPPED  # KVKK: rıza yoksa gönderme
     else:
-        try:
-            notifier.send(customer.phone, n.message)
-            n.status, n.sent_at = NotificationStatus.SENT, utcnow()
-        except Exception as exc:  # kanal hatası siparişi bozmasın
-            # Hata mesajı log'a basılmaz (URL/anahtar sızmasın); yalnızca tip + kanal. Detay DEBUG'da.
-            log.warning("Bildirim gönderilemedi (order=%s kanal=%s hata=%s)",
-                        order.id, notifier.channel, type(exc).__name__)
-            log.debug("Bildirim hata detayı", exc_info=True)
-            n.status = NotificationStatus.FAILED
+        _send(n, chosen, order.id)
+    db.commit()
+    return n
+
+
+def resend(db: Session, n: Notification, notifier: Notifier, email_notifier: Notifier | None) -> Notification:
+    """Yalnızca FAILED kayıt tekrar gönderilir; sonuç aynı kayda yazılır (SENT bir kayıt iki kez gitmez)."""
+    if n.status != NotificationStatus.FAILED or not n.recipient:
+        return n
+    chosen = email_notifier if (email_notifier and n.channel == email_notifier.channel) else notifier
+    _send(n, chosen, n.order_id)
     db.commit()
     return n

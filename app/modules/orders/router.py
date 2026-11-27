@@ -19,12 +19,18 @@ from app.modules.catalog.service import quote
 from app.modules.customers.models import Customer
 from app.modules.media.models import Media
 from app.modules.media.service import UploadError, media_response, save_image
+from app.modules.notifications.models import Notification
 from app.modules.notifications.service import notify_status_change
 from app.modules.orders.models import Order
 from app.modules.orders.service import NewItem, change_status, create_order
 from app.modules.workshop.models import Workshop
 
 router = APIRouter(tags=["orders"])
+
+
+def notify(request: Request, db: Session, order: Order) -> None:
+    st = request.app.state
+    notify_status_change(db, order, st.notifier, str(request.base_url), getattr(st, "email_notifier", None))
 
 MAX_ITEMS = 50
 
@@ -153,10 +159,14 @@ def create_order_view(
 def order_detail(request: Request, order_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)):
     order = get_owned(db, Order, order_id, user)
     media = db.scalars(select(Media).where(Media.order_id == order.id, Media.workshop_id == user.workshop_id)).all()
+    notifications = db.scalars(
+        scoped(Notification, user).where(Notification.order_id == order.id).order_by(Notification.id.desc())
+    ).all()
     return render(
         request,
         "orders/detail.html",
         {"order": order, "next_statuses": allowed_next(order.status), "media": media,
+         "notifications": notifications,
          "tracking_url": f"{str(request.base_url).rstrip('/')}/t/{order.tracking_code}"},
     )
 
@@ -175,7 +185,7 @@ def order_status(
         change_status(db, user, order, to_status, note.strip() or None)
     except InvalidTransition:
         return RedirectResponse(f"/siparisler/{order.id}", status_code=303)
-    notify_status_change(db, order, request.app.state.notifier, str(request.base_url))
+    notify(request, db, order)
     return RedirectResponse(f"/siparisler/{order.id}", status_code=303)
 
 
@@ -193,7 +203,7 @@ def order_move(
         change_status(db, user, order, to_status, None)
     except InvalidTransition:
         return JSONResponse({"ok": False, "message": "Bu durum geçişine izin verilmiyor"}, status_code=409)
-    notify_status_change(db, order, request.app.state.notifier, str(request.base_url))
+    notify(request, db, order)
     return JSONResponse({"ok": True, "status": order.status.value})
 
 
