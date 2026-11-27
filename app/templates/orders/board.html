@@ -28,7 +28,7 @@
 
       {% for o in orders %}
       <a
-        class="ticket {% if o.due_date and o.due_date < today and status.value != 'DELIVERED' %}late{% endif %}"
+        class="ticket{% if deadline[o.id] == 'soon' %} ticket--soon{% elif deadline[o.id] == 'late' %} ticket--late{% endif %}"
         href="/siparisler/{{ o.id }}"
         draggable="true"
         data-order-id="{{ o.id }}"
@@ -44,6 +44,7 @@
           {{ o.total_gross|tl }}
           {% if o.due_date %}
           · termin {{ o.due_date.strftime('%d.%m') }}
+          {% if deadline[o.id] == 'late' %}<strong class="late-tag">gecikti</strong>{% elif deadline[o.id] == 'soon' %}<strong class="soon-tag">yaklaştı</strong>{% endif %}
           {% endif %}
         </span>
       </a>

@@ -48,6 +48,9 @@
     <label>Ek maliyet (taş, kutu…)
       <input name="extra_cost" inputmode="decimal" value="{{ f.extra_cost }}">
     </label>
+    <label>Ortalama üretim süresi (iş günü)
+      <input name="avg_production_days" type="number" min="1" max="365" value="{{ f.avg_production_days if f.avg_production_days is not none else '' }}">
+    </label>
     <div class="stack">
       <label class="check">
         <input type="checkbox" name="is_active" value="true" {{ 'checked' if f.is_active else '' }}> Aktif (pasife almak için işareti kaldırın)

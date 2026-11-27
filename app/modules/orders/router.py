@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from app.core.db import get_db
 from app.core.deps import csrf_protect, current_user
 from app.core.templating import render
 from app.core.tenancy import get_owned, scoped
+from app.domain.deadline import deadline_state, suggest_due_date
 from app.domain.order_status import BOARD_ORDER, InvalidTransition, OrderStatus, allowed_next
 from app.domain.pricing import PricingError
 from app.modules.auth.models import User
@@ -35,7 +36,9 @@ def board(request: Request, db: Session = Depends(get_db), user: User = Depends(
         scoped(Order, user).where(Order.status != OrderStatus.CANCELLED).order_by(Order.due_date, Order.id)
     ).all()
     columns = {s: [o for o in orders if o.status == s] for s in BOARD_ORDER}
-    return render(request, "orders/board.html", {"columns": columns, "today": date.today()})
+    today = date.today()
+    states = {o.id: deadline_state(o.due_date, today, o.status) for o in orders}
+    return render(request, "orders/board.html", {"columns": columns, "today": today, "deadline": states})
 
 
 def _new_form(request: Request, db: Session, user: User, **extra):
@@ -77,6 +80,18 @@ def new_item_row(request: Request, db: Session = Depends(get_db), user: User = D
     if not products:
         raise HTTPException(400, "Aktif ürün yok")
     return render(request, "orders/_item_row.html", {"products": products})
+
+
+@router.get("/siparisler/termin-onerisi")
+def due_date_suggestion(
+    urun: list[int] = Query([]),
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    """Kalemlerdeki en uzun üretim süresinden termin önerisi (iş günü). Öneri yoksa null."""
+    days = [get_owned(db, Product, pid, user).avg_production_days for pid in urun[:MAX_ITEMS]]
+    due = suggest_due_date(date.today(), days)
+    return JSONResponse({"due_date": due.isoformat() if due else None})
 
 
 @router.post("/siparisler/kalem/sil", dependencies=[Depends(csrf_protect)])

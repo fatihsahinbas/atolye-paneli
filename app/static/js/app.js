@@ -4,9 +4,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!items || !total || !window.htmx) return;
 
-    // Toplam fiyatı yeniden hesapla
+    const due = document.getElementById("due-date");
+    const hint = document.getElementById("due-hint");
+    let dueTouched = false;
+    if (due) due.addEventListener("input", () => { dueTouched = true; if (hint) hint.hidden = true; });
+
+    // Termin önerisi: kalemlerdeki en uzun üretim süresi (kullanıcı elle girdiyse dokunma)
+    function refreshDue() {
+        if (!due || dueTouched) return;
+        const ids = [...items.querySelectorAll('select[name="product_id"]')].map((s) => s.value);
+        const qs = ids.map((id) => "urun=" + encodeURIComponent(id)).join("&");
+        fetch("/siparisler/termin-onerisi?" + qs, { credentials: "same-origin" })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
+                if (!data || dueTouched) return;
+                due.value = data.due_date || "";
+                if (hint) hint.hidden = !data.due_date;
+            })
+            .catch(() => {});
+    }
+
+    // Toplam fiyatı ve termin önerisini yeniden hesapla
     function refreshTotal() {
         htmx.trigger(total, "recalculate");
+        refreshDue();
     }
 
     // Ürün veya adet değişince hesapla
