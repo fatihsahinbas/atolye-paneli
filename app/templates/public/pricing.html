@@ -1,34 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Paketler ve Fiyatlandırma · Atölye Paneli{% endblock %}
+{% block title %}Paketler · {{ APP_NAME }}{% endblock %}
 {% block main_class %}public wide{% endblock %}
 {% block content %}
 <header class="hero">
-  <span class="badge">İlk {{ pilot_months }} ay %{{ pilot_discount }} Pilot İndirimi</span>
-  <h1 class="mt">Atölyenizin hacmine göre şeffaf paketler</h1>
-  <p class="muted">Kuyumcu ve el emeği atölyeleriyle yapılan saha görüşmeleriyle belirlendi. İstediğiniz zaman paket değiştirin.</p>
+  <span class="badge">Pilot programı: demo gününe kadar ücretsiz</span>
+  <h1 class="mt">Atölyenizin hacmine göre paketler</h1>
+  <p class="muted">Fiyatlar kuyumcu ve el emeği atölyeleriyle yapılan görüşmelere göre belirlendi. KDV dahildir.</p>
 </header>
 
 <div class="pricing-grid">
   {% for p in plans %}
   <article class="card pricing-card {% if p.is_popular %}popular{% endif %}">
-    {% if p.is_popular %}<div class="pill">En Çok Tercih Edilen</div>{% endif %}
+    {% if p.is_popular %}<div class="pill">En çok tercih edilen</div>{% endif %}
     <h2>{{ p.name }}</h2>
     <p class="muted small">{{ p.tagline }}</p>
 
     <div class="price-block">
       {% if p.is_paid %}
-      <div class="old-price muted small">Normal: <s>{{ p.monthly_price_tl }} ₺ / ay</s></div>
-      <div class="pilot-price">{{ p.pilot_price_tl() }} ₺ <span class="small muted">/ ay</span></div>
-      <div class="small warn">Pilot atölyelere özel %{{ pilot_discount }} indirimli</div>
+      <div class="pilot-price">{{ p.monthly_price|tl }} <span class="small muted">/ ay</span></div>
       {% else %}
       <div class="pilot-price">Ücretsiz</div>
-      <div class="small muted">Kurulum ücreti yok</div>
       {% endif %}
     </div>
 
     <p class="limit-box">
-      <strong>Aylık sipariş sınırı:</strong>
-      {% if p.monthly_order_limit is not none %}{{ p.monthly_order_limit }} sipariş / ay{% else %}Sınırsız sipariş{% endif %}
+      <strong>Aylık sipariş:</strong>
+      {% if p.max_orders_per_month is not none %}{{ p.max_orders_per_month }} sipariş{% else %}sınırsız{% endif %}
     </p>
 
     <ul class="plan-features">
@@ -38,19 +35,17 @@
     </ul>
 
     <div class="mt">
-      <a class="btn {% if p.is_popular %}primary{% endif %} full" href="/kayit">
-        {% if p.is_paid %}Pilot Başvurusu Yap{% else %}Ücretsiz Başla{% endif %}
-      </a>
+      <a class="btn {% if p.is_popular %}primary{% endif %} full" href="/kayit">14 gün ücretsiz dene</a>
     </div>
   </article>
   {% endfor %}
 </div>
 
 <section class="card mt">
-  <h2>Pilot İndirimi Nasıl İşler?</h2>
+  <h2>Pilot programı</h2>
   <p class="muted">
-    Erken dönem pilot atölyelerimize ilk <strong>{{ pilot_months }} ay boyunca %{{ pilot_discount }}</strong> indirim uygulanır.
-    Aylık sipariş sınırınıza yaklaştığınızda panel üzerinden bir üst pakete tek tıkla geçebilirsiniz; mevcut siparişleriniz ve fiyat geçmişiniz korunur.
+    Pilot programındaki atölyeler için demo gününe kadar ücretsiz. Pilot atölyeler ödeme ekranı görmez.
+    Yeni kayıt olan her atölyeye 14 günlük deneme süresi tanınır.
   </p>
 </section>
 {% endblock %}

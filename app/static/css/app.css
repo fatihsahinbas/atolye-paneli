@@ -248,7 +248,7 @@ button.link { background: none; border: none; padding: 0; color: var(--brand); t
 /* Paketler ve Fiyatlandırma sayfası (/fiyatlar) · Hayrettin (H4) */
 .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; align-items: stretch; }
 .pricing-card { display: flex; flex-direction: column; position: relative; padding: 1.5rem; }
-.pricing-card.popular { border: 2px solid var(--brand); box-shadow: 0 8px 24px rgba(43, 36, 32, 0.08); }
+.pricing-card.popular { border: 2px solid var(--brand);  }
 .pill { position: absolute; top: -12px; right: 16px; background: var(--brand); color: var(--card); font-size: .78rem; font-weight: 600; padding: .2rem .7rem; border-radius: 99px; }
 .price-block { margin: .8rem 0; padding: .8rem; background: var(--surface-3); border-radius: 8px; }
 .pilot-price { font-size: 1.75rem; font-weight: 700; color: var(--brand); }

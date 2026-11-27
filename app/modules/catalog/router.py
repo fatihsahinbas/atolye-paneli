@@ -9,7 +9,7 @@ from app.core.db import get_db, utcnow
 from app.core.deps import csrf_protect, current_user, require_owner
 from app.core.templating import render
 from app.core.tenancy import get_owned, scoped
-from app.domain.plans import PILOT_DISCOUNT_PERCENT, PILOT_DURATION_MONTHS, list_plans
+from app.domain.plans import public_plans
 from app.domain.pricing import PURITY_MILYEM, PricingError, PricingType
 from app.modules.auth.models import Role, User
 from app.modules.auth.schemas import first_error
@@ -39,7 +39,7 @@ class ProductIn(BaseModel):
         if self.pricing_type == PricingType.GOLD and (self.weight_g is None or self.purity_milyem is None):
             raise ValueError("Altın üründe gram ve ayar zorunlu")
         if self.pricing_type == PricingType.GOLD_COST_PLUS:
-            # Fiyat motoru hazır; ürün alanları + migration (kolon 10 -> 20 karakter) gelince açılacak.
+            # Fiyat motoru hazır; ürün alanları + migration (kolon 10 → 20 karakter) gelince açılacak.
             raise ValueError("Maliyet + kâr fiyatlaması henüz desteklenmiyor")
         return self
 
@@ -222,9 +222,5 @@ def pricing_page(request: Request):
     return render(
         request,
         "public/pricing.html",
-        {
-            "plans": list_plans(),
-            "pilot_discount": PILOT_DISCOUNT_PERCENT,
-            "pilot_months": PILOT_DURATION_MONTHS,
-        },
+        {"plans": public_plans()},
     )
