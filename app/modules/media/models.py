@@ -16,3 +16,4 @@ class Media(TenantMixin, TimestampMixin, Base):
     size_bytes: Mapped[int]
     caption: Mapped[str | None] = mapped_column(String(200))
     is_public: Mapped[bool] = mapped_column(default=True)  # takip linkinde müşteri görsün mü
+    is_cover: Mapped[bool] = mapped_column(default=False)  # ürünün vitrin kapağı (üründe en fazla bir tane)

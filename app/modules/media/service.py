@@ -117,3 +117,15 @@ def media_response(media_root: str, m: Media, boyut: str | None) -> FileResponse
         if p.exists():
             return FileResponse(p, media_type="image/webp")
     return FileResponse(media_path(media_root, m.stored_name), media_type=m.content_type)
+
+
+def delete_files(media_root: str, stored_name: str) -> None:
+    """Orijinal + küçük resim. Dosya yoksa hata vermez (DB önce silinir, sonra dosyalar)."""
+    for name in (stored_name, thumb_name(stored_name)):
+        media_path(media_root, name).unlink(missing_ok=True)
+
+
+def cover_url(product, slug: str, covers: dict[int, int]) -> str | None:
+    """Vitrin için kapak görseli adresi. covers: {product_id: media_id} (showcase router tek sorguda hazırlar)."""
+    mid = covers.get(product.id)
+    return f"/v/{slug}/gorsel/{mid}" if mid else None

@@ -74,7 +74,11 @@ def _page(request: Request, db: Session, user: User, **extra):
 
 
 def _edit_page(request: Request, db: Session, user: User, product: Product, **extra):
+    from app.modules.media.gallery import MAX_PER_PRODUCT, product_images  # döngüsel import olmasın
+
     ws = db.get(Workshop, user.workshop_id)
+    extra.setdefault("images", product_images(db, product))
+    extra.setdefault("max_images", MAX_PER_PRODUCT)
     return render(
         request,
         "catalog/edit.html",

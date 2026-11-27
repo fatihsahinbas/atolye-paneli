@@ -268,3 +268,4 @@ button.link { background: none; border: none; padding: 0; color: var(--brand); t
 .order-item { border-bottom: 1px solid var(--line); padding-bottom: .6rem; margin-bottom: .6rem; }
 .legal h2 { font-size: 1.05rem; margin-top: .8rem; } .showcase-legal { text-align: center; margin-top: 2rem; }
 .status-sent { background: var(--ok-bg); color: var(--ok); } .status-failed { background: var(--bad-bg); color: var(--bad); }
+.gallery figure.is-cover img { outline: 3px solid var(--brand-2); }
