@@ -65,4 +65,34 @@
     <a class="btn" href="/urunler">İptal</a>
   </div>
 </form>
+
+<section class="card stack">
+  <h2>Ürün görselleri</h2>
+  <p class="muted small">Kapak görseli vitrinde görünür. En fazla {{ max_images }} görsel; JPEG, PNG veya WEBP.</p>
+  <div class="gallery">
+    {% for m in images %}
+    <figure class="{{ 'is-cover' if m.is_cover else '' }}">
+      <a href="/medya/{{ m.id }}"><img src="/medya/{{ m.id }}?boyut=kucuk" loading="lazy" alt="{{ product.name }}"></a>
+      <figcaption class="row wrap">
+        {% if m.is_cover %}<span class="badge">Kapak</span>{% else %}
+        <form method="post" action="/gorsel/{{ m.id }}/kapak" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="link small">Kapak yap</button>
+        </form>{% endif %}
+        <form method="post" action="/gorsel/{{ m.id }}/sil" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="link small danger">Sil</button>
+        </form>
+      </figcaption>
+    </figure>
+    {% else %}<p class="muted">Henüz görsel yok.</p>{% endfor %}
+  </div>
+  {% if images|length < max_images %}
+  <form method="post" action="/urunler/{{ product.id }}/gorsel" enctype="multipart/form-data" class="row wrap">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="file" name="files" accept="image/jpeg,image/png,image/webp" multiple required>
+    <button>Yükle</button>
+  </form>
+  {% endif %}
+</section>
 {% endblock %}

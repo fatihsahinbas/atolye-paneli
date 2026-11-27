@@ -19,6 +19,7 @@ from app.modules.auth.staff import router as staff_router
 from app.modules.catalog.router import router as catalog_router
 from app.modules.customers.router import router as customers_router
 from app.modules.legal.router import router as legal_router
+from app.modules.media.gallery import router as gallery_router
 from app.modules.notifications.router import router as notifications_router
 from app.modules.notifications.service import Notifier, build_email_notifier, build_notifier
 from app.modules.orders.router import router as orders_router
@@ -111,7 +112,7 @@ def create_app(
     app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
     for r in (auth_router, staff_router, orders_router, customers_router, catalog_router,
               tracking_router, showcase_router, payments_router, workshop_router, legal_router,
-              notifications_router):
+              notifications_router, gallery_router):
         app.include_router(r)
 
     @app.get("/healthz", include_in_schema=False)

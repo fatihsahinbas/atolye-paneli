@@ -14,8 +14,8 @@
   <article class="product-card" data-modal-id="modal-{{ loop.index }}" tabindex="0" role="button"
            aria-haspopup="dialog" aria-label="{{ c.product.name }} detayı">
     <div class="product-image">
-      {# Kapak görseli Alper'in PROJE 7'sinden (cover_url) gelecek; o zamana kadar yer tutucu #}
-      <div class="placeholder-img">Görsel yakında</div>
+      {% if c.cover %}<img src="{{ c.cover }}?boyut=kucuk" loading="lazy" alt="{{ c.product.name }}">
+      {% else %}<div class="placeholder-img">Görsel yakında</div>{% endif %}
     </div>
     <div class="product-info">
       <h3>{{ c.product.name }}</h3>
@@ -28,7 +28,8 @@
       <button type="button" class="close" aria-label="Kapat">&times;</button>
       <div class="modal-body">
         <div class="modal-image">
-          <div class="placeholder-img">Görsel yakında</div>
+          {% if c.cover %}<img src="{{ c.cover }}" loading="lazy" alt="{{ c.product.name }}">
+          {% else %}<div class="placeholder-img">Görsel yakında</div>{% endif %}
         </div>
         <div class="modal-text">
           <h2 id="modal-{{ loop.index }}-title">{{ c.product.name }}</h2>
