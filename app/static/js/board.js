@@ -71,14 +71,12 @@
 
     const body = new URLSearchParams();
     body.set("to_status", newStatus);
-    body.set("note", "");
 
     card.classList.add("ticket-pending");
 
     const headers = {
-      "HX-Request": "true",
       "Content-Type": "application/x-www-form-urlencoded",
-      "Accept": "text/plain"
+      "Accept": "application/json"
     };
 
     const csrfHeaders = document.body.getAttribute("hx-headers");
@@ -94,26 +92,23 @@
       }
     }
 
-    fetch(`/siparisler/${orderId}/durum`, {
+    fetch(`/siparisler/${orderId}/tasi`, {
       method: "POST",
       headers,
       body: body.toString(),
       credentials: "same-origin"
     })
       .then(async (response) => {
-        if (response.status === 204) {
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok) {
           card.dataset.currentStatus = newStatus;
           showMessage("Sipariş durumu güncellendi.", false);
           return;
         }
 
-        const errorText = await response.text();
-
         restoreCard();
-
-        showMessage(
-          errorText || "Sipariş durumu değiştirilemedi."
-        );
+        showMessage(data.message || "Sipariş durumu değiştirilemedi.");
       })
       .catch(() => {
         restoreCard();

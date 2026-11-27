@@ -5,13 +5,13 @@
 {% else %}
     <div class="price-box">
         <div class="row-between">
-            <span>Ara toplam</span>
-            <strong>{{ "%.2f"|format(total_net) }} TL</strong>
+            <span>Ara toplam (KDV hariç)</span>
+            <strong>{{ total_net|tl }}</strong>
         </div>
 
         <div class="row-between">
-            <span>Genel toplam</span>
-            <strong>{{ "%.2f"|format(total_gross) }} TL</strong>
+            <span>Genel toplam (KDV dahil)</span>
+            <strong>{{ total_gross|tl }}</strong>
         </div>
     </div>
 {% endif %}

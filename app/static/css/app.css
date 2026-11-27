@@ -256,3 +256,12 @@ button.link { background: none; border: none; padding: 0; color: var(--brand); t
 .plan-features { list-style: none; padding: 0; margin: .8rem 0; display: flex; flex-direction: column; gap: .45rem; flex: 1; }
 .btn.full { width: 100%; text-align: center; }
 .auth-links { text-align: center; }
+
+/* Sürükle-bırak pano · Çınar (H3) */
+.ticket[draggable="true"] { cursor: grab; }
+.ticket-dragging { opacity: .5; }
+.ticket-pending { opacity: .7; }
+.col.drop-active { outline: 2px dashed var(--brand); outline-offset: -4px; }
+#board-message:not(.alert-error) { background: var(--ok-bg); color: var(--ok); border-color: var(--ok); }
+.row-between { display: flex; justify-content: space-between; gap: 1rem; }
+.order-item { border-bottom: 1px solid var(--line); padding-bottom: .6rem; margin-bottom: .6rem; }

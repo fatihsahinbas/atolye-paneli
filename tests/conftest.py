@@ -70,7 +70,7 @@ def seed_order(client: TestClient, consent: bool = True) -> int:
                                   "base_price": "1000", "show_in_showcase": "true"})
     page = client.get("/siparisler/yeni").text
     cid = re.search(r'name="customer_id"[^>]*>\s*<option value="(\d+)"', page).group(1)
-    pid = re.search(r'id="product">\s*<option value="(\d+)"', page).group(1)
+    pid = re.search(r'name="product_id"[^>]*>\s*<option value="(\d+)"', page).group(1)
     r = client.post("/siparisler", data={"csrf_token": t, "customer_id": cid, "product_id": pid, "quantity": "2",
                                          "due_date": "", "note": ""})
     assert r.status_code == 303, r.text
