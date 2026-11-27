@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Müşteri düzenle</h1>
+<form method="post" action="/musteriler/{{ c.id }}/duzenle" class="card stack">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="grid3">
+    <label>Ad soyad <input name="full_name" required maxlength="120" value="{{ c.full_name }}"></label>
+    <label>Telefon <input name="phone" inputmode="tel" value="{{ c.phone or '' }}"></label>
+    <label>E-posta <input type="email" name="email" value="{{ c.email or '' }}"></label>
+  </div>
+  <label>Not <input name="notes" maxlength="2000" value="{{ c.notes or '' }}"></label>
+  {% include "customers/_consent.html" %}
+  <div class="row">
+    <button class="primary">Kaydet</button>
+    <a class="btn" href="/musteriler">İptal</a>
+  </div>
+</form>
+{% endblock %}

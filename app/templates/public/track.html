@@ -24,5 +24,6 @@
     {% for m in media %}<figure><a href="/t/{{ order.tracking_code }}/medya/{{ m.id }}"><img src="/t/{{ order.tracking_code }}/medya/{{ m.id }}?boyut=kucuk" loading="lazy" alt="{{ m.caption or 'Üretim fotoğrafı' }}"></a><figcaption>{{ m.caption or '' }}</figcaption></figure>{% endfor %}
   </div>
   {% endif %}
+  <p class="muted small mt"><a href="/kvkk?atolye={{ workshop.slug }}">Kişisel verileriniz (KVKK)</a></p>
 </div>
 {% endblock %}

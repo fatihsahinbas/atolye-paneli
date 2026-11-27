@@ -17,6 +17,8 @@ class Customer(TenantMixin, TimestampMixin, Base):
     notes: Mapped[str | None] = mapped_column(Text)
     # Bildirim göndermek için açık rıza zamanı (KVKK). Boşsa bildirim gitmez.
     contact_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Kampanya mesajı izni (pazarlama). Bildirim izninden ayrıdır, varsayılan kapalı (KVKK, Hasan H3)
+    marketing_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     @property
     def first_name(self) -> str:

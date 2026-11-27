@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}KVKK aydınlatma metni · {{ APP_NAME }}{% endblock %}
+{% block main_class %}public{% endblock %}
+{% block content %}
+<article class="card stack legal">
+  <h1>Kişisel verilerin korunması aydınlatma metni</h1>
+  <p class="muted small">Taslaktır; satıştan önce hukukçu tarafından gözden geçirilecektir.</p>
+
+  <h2>1. Veri sorumlusu</h2>
+  <p>Siparişinize ait kişisel veriler, siparişi aldığınız atölye olan <strong>{{ workshop_name }}</strong> tarafından
+    veri sorumlusu sıfatıyla işlenir. {{ APP_NAME }}, atölyenin kullandığı yazılım hizmetidir ve verileri yalnızca
+    atölye adına, veri işleyen olarak saklar.</p>
+
+  <h2>2. İşlenen veriler</h2>
+  <ul>
+    <li>Kimlik ve iletişim: ad soyad, telefon, e-posta</li>
+    <li>Sipariş bilgileri: ürün, kişiselleştirme notu, tutar, termin, sipariş durumu</li>
+    <li>Atölyenin sipariş için yüklediği ürün fotoğrafları</li>
+  </ul>
+
+  <h2>3. Amaç ve hukuki sebep</h2>
+  <p>Veriler siparişin alınması, üretilmesi ve teslimi için (KVKK m.5/2-c, sözleşmenin ifası) ve yasal
+    yükümlülüklerin yerine getirilmesi için (m.5/2-ç) işlenir.</p>
+  <p>Aşağıdaki iki izin <strong>ayrıdır</strong> ve isteğe bağlıdır:</p>
+  <ul>
+    <li><strong>Sipariş durumu bildirimi:</strong> siparişiniz aşama değiştirdiğinde SMS, WhatsApp veya e-posta ile
+      haber verilmesi.</li>
+    <li><strong>Kampanya mesajı:</strong> atölyenin yeni ürün ve kampanyalarını size iletmesi. Varsayılan olarak
+      kapalıdır.</li>
+  </ul>
+
+  <h2>4. Aktarım</h2>
+  <p>Bildirimler için telefon numaranız ve adınız, mesajı ileten SMS / WhatsApp / e-posta hizmet sağlayıcısına
+    aktarılır. Ödeme bilgisi atölye tarafından saklanmaz.</p>
+
+  <h2>5. Saklama süresi</h2>
+  <p>Sipariş kayıtları yasal saklama süreleri boyunca tutulur. Silme talebinizde kişisel verileriniz
+    anonimleştirilir; sipariş geçmişi isimsiz olarak kalır.</p>
+
+  <h2>6. Haklarınız (KVKK m.11)</h2>
+  <p>Verilerinizin işlenip işlenmediğini öğrenme, düzeltilmesini veya silinmesini isteme, verdiğiniz izni geri
+    alma haklarına sahipsiniz. Talebinizi doğrudan <strong>{{ workshop_name }}</strong>'e iletebilirsiniz.</p>
+
+  <p class="muted small">Son güncelleme: {{ updated }}</p>
+</article>
+{% endblock %}
