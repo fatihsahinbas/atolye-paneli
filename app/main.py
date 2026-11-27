@@ -23,7 +23,9 @@ from app.modules.media.gallery import router as gallery_router
 from app.modules.notifications.router import router as notifications_router
 from app.modules.notifications.service import Notifier, build_email_notifier, build_notifier
 from app.modules.orders.router import router as orders_router
+from app.modules.payments.providers import PaymentProvider, build_provider
 from app.modules.payments.router import router as payments_router
+from app.modules.payments.subscription import router as subscription_router
 from app.modules.showcase.router import router as showcase_router
 from app.modules.tracking.router import router as tracking_router
 from app.modules.workshop.router import router as workshop_router
@@ -32,12 +34,17 @@ log = logging.getLogger("atolye")
 
 CSP = (
     "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; "
-    "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; "
+    # Ödeme (H4): PayTR iframe'i; iyzico ödeme sayfasına giden 303 yönlendirmesi form-action'a takılır
+    "frame-src https://www.paytr.com; form-action 'self' https://sandbox-cpp.iyzipay.com"
 )
 
 
 def create_app(
-    settings: Settings | None = None, notifier: Notifier | None = None, email_notifier: Notifier | None = None
+    settings: Settings | None = None,
+    notifier: Notifier | None = None,
+    email_notifier: Notifier | None = None,
+    payment_provider: PaymentProvider | None = None,
 ) -> FastAPI:
     settings = settings or get_settings()
     setup_logging()
@@ -65,6 +72,8 @@ def create_app(
     # Somut sınıf burada seçilmez; kanal .env'deki NOTIFY_CHANNEL'dan gelir.
     app.state.notifier = notifier or build_notifier(settings)
     app.state.email_notifier = email_notifier or build_email_notifier(settings)  # telefonu olmayan müşteri
+    # PAYMENT_PROVIDER=fake|iyzico|paytr; canlı ödeme kilidi açıkken canlı adres → RuntimeError (uygulama açılmaz)
+    app.state.payment_provider = payment_provider or build_provider(settings)
     Path(settings.media_root).mkdir(parents=True, exist_ok=True)
 
     # --- Middleware -------------------------------------------------------
@@ -112,7 +121,7 @@ def create_app(
     app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
     for r in (auth_router, staff_router, orders_router, customers_router, catalog_router,
               tracking_router, showcase_router, payments_router, workshop_router, legal_router,
-              notifications_router, gallery_router):
+              notifications_router, gallery_router, subscription_router):
         app.include_router(r)
 
     @app.get("/healthz", include_in_schema=False)

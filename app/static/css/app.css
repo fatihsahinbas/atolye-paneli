@@ -269,3 +269,4 @@ button.link { background: none; border: none; padding: 0; color: var(--brand); t
 .legal h2 { font-size: 1.05rem; margin-top: .8rem; } .showcase-legal { text-align: center; margin-top: 2rem; }
 .status-sent { background: var(--ok-bg); color: var(--ok); } .status-failed { background: var(--bad-bg); color: var(--bad); }
 .gallery figure.is-cover img { outline: 3px solid var(--brand-2); }
+.paytr-frame { width: 100%; min-height: 640px; border: 0; } .status-paid { background: var(--ok-bg); color: var(--ok); } .sub-banner { background: var(--bad-bg); color: var(--bad); text-align: center; padding: .4rem; font-size: .9rem; }

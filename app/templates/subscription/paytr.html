@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Ödeme</h1>
+<p class="muted">Ödeme PayTR güvenli sayfasında alınır (test ortamı). İşlem bitince <a href="/abonelik">abonelik sayfasına</a> dönün.</p>
+<iframe class="paytr-frame" src="{{ iframe_url }}" title="PayTR ödeme formu"></iframe>
+{% endblock %}

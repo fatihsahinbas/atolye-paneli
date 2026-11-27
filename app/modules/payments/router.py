@@ -61,5 +61,6 @@ async def payment_webhook(request: Request, db: Session = Depends(get_db)):
         return {"status": "duplicate"}
     db.add(ProcessedWebhook(provider="generic", event_id=event_id, payload=body.decode("utf-8", "replace")))
     db.commit()
-    # TODO(Hasan): payload["type"] == "subscription.paid" → atölye aboneliğini uzat
+    # Genel HMAC webhook örneği olarak kalıyor. PayTR bildirimi /odeme/paytr/bildirim, iyzico dönüşü
+    # /odeme/iyzico/donus (app/modules/payments/subscription.py).
     return {"status": "ok"}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card narrow stack">
+  <p><span class="badge">Demo ödeme sayfası</span></p>
+  <h1>{{ plan.name }} paketi · 1 ay</h1>
+  <p>Tutar: <strong>{{ payment.amount|tl }}</strong></p>
+  <p class="muted small">Bu sayfa PAYMENT_PROVIDER=fake iken sağlayıcının ödeme ekranını taklit eder. Kart bilgisi istenmez, para çekilmez.</p>
+  <div class="row">
+    <form method="post" action="/odeme/test/{{ payment.merchant_oid }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="sonuc" value="ok">
+      <button class="primary">Test ödemesini tamamla</button>
+    </form>
+    <form method="post" action="/odeme/test/{{ payment.merchant_oid }}" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="sonuc" value="hata">
+      <button>Başarısız ödeme dene</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import utcnow
 from app.core.security import DUMMY_HASH, hash_password, new_token, token_digest, verify_password
+from app.domain.subscription import TRIAL_DAYS
 from app.modules.auth.models import Role, User, UserSession
 from app.modules.auth.schemas import LoginIn, RegisterIn
 from app.modules.media.models import Media
@@ -24,7 +25,10 @@ def register_workshop(db: Session, data: RegisterIn) -> User:
     if db.scalar(select(User.id).where(User.email == data.email)):
         # Genel mesaj: hangi e-postanın kayıtlı olduğu sızmasın
         raise AuthError("Kayıt tamamlanamadı, bilgileri kontrol edin")
-    ws = Workshop(name=data.workshop_name, slug=data.slug)
+    ws = Workshop(
+        name=data.workshop_name, slug=data.slug,
+        subscription_ends_at=utcnow() + timedelta(days=TRIAL_DAYS),  # 14 gün deneme
+    )
     db.add(ws)
     db.flush()
     user = User(

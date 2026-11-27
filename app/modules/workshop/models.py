@@ -2,7 +2,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, Numeric, String
+from sqlalchemy import DateTime, Numeric, String, false
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, TimestampMixin
@@ -20,3 +20,8 @@ class Workshop(TimestampMixin, Base):
     # Kuyumcular için: günlük has altın gram fiyatı (elle girilir; ileride API)
     gold_price_per_gram: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
     gold_price_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # Abonelik (Hasan H4). Pilotluk plan_code ile değil is_pilot ile anlaşılır.
+    plan_code: Mapped[str | None] = mapped_column(String(20))  # None: henüz paket seçilmedi
+    subscription_ends_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    is_pilot: Mapped[bool] = mapped_column(default=False, server_default=false())

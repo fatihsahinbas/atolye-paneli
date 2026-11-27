@@ -43,10 +43,25 @@ templates.env.globals["NOTIFY_LABELS"] = {
 }
 
 
+def _sub_expired(user) -> bool:
+    """Üst bant uyarısı: deneme/abonelik süresi doldu (H4: yalnız uyarı, engelleme H5)."""
+    from app.domain.subscription import is_active  # döngüsel import olmasın
+
+    ws = getattr(user, "workshop", None)
+    if ws is None:
+        return False
+    ends = ws.subscription_ends_at
+    if ends is not None and ends.tzinfo is None:
+        ends = ends.replace(tzinfo=UTC)
+    return not is_active(ends, datetime.now(UTC), bool(ws.is_pilot))
+
+
 def render(request: Request, name: str, ctx: dict[str, Any] | None = None, status_code: int = 200):
     sess = getattr(request.state, "session", None)
+    user = sess.user if sess else None
     base = {
-        "user": sess.user if sess else None,
+        "user": user,
+        "sub_expired": _sub_expired(user),
         "csrf_token": sess.csrf_token if sess else "",
         "APP_NAME": request.app.state.settings.app_name,
     }
