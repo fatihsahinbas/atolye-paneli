@@ -23,6 +23,7 @@ from app.modules.orders.router import router as orders_router
 from app.modules.payments.router import router as payments_router
 from app.modules.showcase.router import router as showcase_router
 from app.modules.tracking.router import router as tracking_router
+from app.modules.workshop.router import router as workshop_router
 
 log = logging.getLogger("atolye")
 
@@ -104,7 +105,7 @@ def create_app(settings: Settings | None = None, notifier: Notifier | None = Non
     # --- Router'lar ---------------------------------------------------------
     app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
     for r in (auth_router, staff_router, orders_router, customers_router, catalog_router,
-              tracking_router, showcase_router, payments_router):
+              tracking_router, showcase_router, payments_router, workshop_router):
         app.include_router(r)
 
     @app.get("/healthz", include_in_schema=False)

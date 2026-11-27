@@ -16,7 +16,14 @@
 
 <div class="card">
   <table class="tbl">
-    <tr><th>Ürün</th><th>Tip</th><th>Detay</th><th>Vitrin</th></tr>
+    <tr>
+      <th>Ürün</th>
+      <th>Tip</th>
+      <th>Detay</th>
+      <th>Durum</th>
+      <th>Vitrin</th>
+      {% if user.role == "OWNER" %}<th>İşlem</th>{% endif %}
+    </tr>
     {% for p in products %}
     <tr>
       <td><b>{{ p.name }}</b>{% if p.description %}<br><span class="muted small">{{ p.description }}</span>{% endif %}</td>
@@ -25,9 +32,15 @@
         {% if p.pricing_type == 'GOLD' %}{{ p.weight_g }} gr · {{ p.purity_milyem }} milyem · işçilik {{ p.labor_milyem or 0 }}
         {% else %}{{ p.base_price|tl }} + KDV{% endif %}
       </td>
+      <td>{{ 'Aktif' if p.is_active else 'Pasif' }}</td>
       <td>{{ '✓' if p.show_in_showcase else '—' }}</td>
+      {% if user.role == "OWNER" %}
+      <td><a class="btn small" href="/urunler/{{ p.id }}/duzenle">Düzenle</a></td>
+      {% endif %}
     </tr>
-    {% else %}<tr><td colspan="4" class="muted">Henüz ürün yok.</td></tr>{% endfor %}
+    {% else %}
+    <tr><td colspan="6" class="muted">Henüz ürün yok.</td></tr>
+    {% endfor %}
   </table>
 </div>
 

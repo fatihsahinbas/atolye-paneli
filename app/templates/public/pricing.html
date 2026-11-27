@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Paketler · {{ APP_NAME }}{% endblock %}
+{% block main_class %}public wide{% endblock %}
+{% block content %}
+<header class="hero">
+  <span class="badge">Pilot programı: demo gününe kadar ücretsiz</span>
+  <h1 class="mt">Atölyenizin hacmine göre paketler</h1>
+  <p class="muted">Fiyatlar kuyumcu ve el emeği atölyeleriyle yapılan görüşmelere göre belirlendi. KDV dahildir.</p>
+</header>
+
+<div class="pricing-grid">
+  {% for p in plans %}
+  <article class="card pricing-card {% if p.is_popular %}popular{% endif %}">
+    {% if p.is_popular %}<div class="pill">En çok tercih edilen</div>{% endif %}
+    <h2>{{ p.name }}</h2>
+    <p class="muted small">{{ p.tagline }}</p>
+
+    <div class="price-block">
+      {% if p.is_paid %}
+      <div class="pilot-price">{{ p.monthly_price|tl }} <span class="small muted">/ ay</span></div>
+      {% else %}
+      <div class="pilot-price">Ücretsiz</div>
+      {% endif %}
+    </div>
+
+    <p class="limit-box">
+      <strong>Aylık sipariş:</strong>
+      {% if p.max_orders_per_month is not none %}{{ p.max_orders_per_month }} sipariş{% else %}sınırsız{% endif %}
+    </p>
+
+    <ul class="plan-features">
+      {% for feat in p.features %}
+      <li>✓ {{ feat }}</li>
+      {% endfor %}
+    </ul>
+
+    <div class="mt">
+      <a class="btn {% if p.is_popular %}primary{% endif %} full" href="/kayit">14 gün ücretsiz dene</a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+
+<section class="card mt">
+  <h2>Pilot programı</h2>
+  <p class="muted">
+    Pilot programındaki atölyeler için demo gününe kadar ücretsiz. Pilot atölyeler ödeme ekranı görmez.
+    Yeni kayıt olan her atölyeye 14 günlük deneme süresi tanınır.
+  </p>
+</section>
+{% endblock %}
