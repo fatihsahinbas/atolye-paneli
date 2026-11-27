@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field, ValidationError, field_validator
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db, utcnow
@@ -9,7 +10,9 @@ from app.core.templating import render
 from app.core.tenancy import get_owned, scoped
 from app.modules.auth.models import User
 from app.modules.auth.schemas import EMAIL_RE, first_error
-from app.modules.customers.models import Customer
+from app.modules.customers.models import Customer, anonymized_name
+from app.modules.notifications.models import Notification
+from app.modules.orders.models import Order
 
 router = APIRouter(prefix="/musteriler", tags=["customers"])
 
@@ -85,9 +88,16 @@ def anonymize_customer(
 ):
     """KVKK silme talebi: sipariş geçmişi kalır, kişisel veri kalıcı olarak silinir."""
     c = get_owned(db, Customer, customer_id, user)
-    c.full_name = f"Silinmiş Müşteri #{c.id}"
+    c.full_name = anonymized_name(c.id)
     c.phone = c.email = c.notes = None
     c.contact_consent_at = c.marketing_consent_at = None
+    # Bildirim geçmişinde de ad/telefon/e-posta kalmasın
+    order_ids = select(Order.id).where(Order.customer_id == c.id, Order.workshop_id == user.workshop_id)
+    db.execute(
+        update(Notification)
+        .where(Notification.workshop_id == user.workshop_id, Notification.order_id.in_(order_ids))
+        .values(recipient=None, message="[KVKK silme talebiyle anonimleştirildi]")
+    )
     db.commit()
     return RedirectResponse("/musteriler", status_code=303)
 
@@ -104,6 +114,8 @@ def edit_customer_form(
     request: Request, customer_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)
 ):
     c = get_owned(db, Customer, customer_id, user)
+    if c.is_anonymized:
+        return RedirectResponse("/musteriler", status_code=303)
     return render(request, "customers/edit.html", {"c": c})
 
 
@@ -121,6 +133,8 @@ def update_customer(
     marketing: bool = Form(False),
 ):
     c = get_owned(db, Customer, customer_id, user)
+    if c.is_anonymized:  # silinmiş veri eski bir formla geri yazılamaz
+        return RedirectResponse("/musteriler", status_code=303)
     try:
         data = CustomerIn(full_name=full_name.strip(), phone=phone or None, email=email or None, notes=notes or None)
     except ValidationError as e:

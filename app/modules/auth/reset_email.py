@@ -1,5 +1,6 @@
 """Şifre sıfırlama e-postası. SMTP ayarı yoksa yalnızca test ortamında taklit edilir."""
 import smtplib
+import ssl
 from email.message import EmailMessage
 
 from app.core.config import Settings
@@ -18,7 +19,7 @@ def send_reset_email(settings: Settings, to_email: str, url: str) -> None:
     )
     with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as smtp:
         if settings.smtp_starttls:
-            smtp.starttls()
+            smtp.starttls(context=ssl.create_default_context())
         if settings.smtp_user:
             smtp.login(settings.smtp_user, settings.smtp_password)
         smtp.send_message(msg)

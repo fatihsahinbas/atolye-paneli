@@ -23,7 +23,7 @@ class FakeSMTP:
     def __exit__(self, *a):
         return False
 
-    def starttls(self):
+    def starttls(self, context=None):
         pass
 
     def login(self, user, password):
@@ -123,3 +123,20 @@ def test_email_not_in_logs_and_password_not_in_repr(mail_app, caplog, monkeypatc
         _move(c, oid)
     assert "musteri@ornek.com" not in caplog.text
     assert "gizli-sifre" not in repr(mail_app.state.email_notifier)
+
+
+def test_retry_after_consent_revoked_is_skipped(mail_app):
+    c = make_client(mail_app)
+    register(c, "atolye-a", "a@ornek.com")
+    oid = seed_order(c)
+    _email_only_customer(mail_app)
+    FakeSMTP.fail = True
+    _move(c, oid)
+    n = _last(mail_app)
+    with mail_app.state.SessionLocal() as db:
+        db.query(Customer).one().contact_consent_at = None
+        db.commit()
+    FakeSMTP.fail = False
+    c.post(f"/bildirimler/{n.id}/tekrar", data={"csrf_token": csrf(c)})
+    assert _last(mail_app).status == NotificationStatus.SKIPPED
+    assert FakeSMTP.sent == []
